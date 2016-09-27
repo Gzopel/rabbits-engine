@@ -51,6 +51,27 @@ describe(__dirname,() => {
         cFSM.tick(new Date().getTime()+steps*(10+steps));
       }
       assert(cFSM.state.action === STATES.IDLE, 'should change state');
+      assert(character.position.x === 5, 'should complete the walk')
+      done();
+    })
+
+    it('should keep walking until it reaches the target', (done) => {
+      const character = { position:{ x:0, z:0 } };
+      const cFSM = new PlayerFSM(emitter, character, transitions);
+      emitter.emit('start', {event:'start'});
+      cFSM.tick(new Date().getTime()+10);
+      assert(cFSM.state.action === STATES.WALKING, 'should change state');
+      let steps = 0;
+      while(cFSM.state.action === STATES.WALKING) {
+        steps++;
+        character.position.x++;
+        if (steps === 3) {
+          cFSM.newAction(buildState(STATES.BASIC_ATTACK), { target:12321 });
+        }
+        cFSM.tick(new Date().getTime()+steps*(10+steps));
+      }
+      assert(cFSM.state.action === STATES.BASIC_ATTACK, 'should change state');
+      assert(character.position.x === 3, 'shouldn\'t complete the walk')
       done();
     })
   })
