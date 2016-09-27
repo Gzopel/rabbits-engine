@@ -15,6 +15,7 @@
   },
 
   "rules": {
+    "no-mixed-operators": 0,
     "no-plusplus": 0,
     "no-multi-spaces": 0,
     "object-shorthand": 0,

@@ -2,7 +2,7 @@ import { assert } from 'chai';
 import diceRoll from '../lib/dice';
 
 
-describe("Dice", () => {
+describe(__dirname, () => {
   it('should do a simple roll', (done) => {
     const dices = 10;
     const result = diceRoll(dices, 6);

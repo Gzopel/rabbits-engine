@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import eventEmitter from 'event-emitter';
 
-import { STATES } from '../lib/FSM/states';
+import { ACTIONS } from '../lib/rules/actions.js';
 import { CharacterFSM } from '../lib/FSM/CharacterFSM';
 
 describe(__dirname, () => {
@@ -23,18 +23,19 @@ describe(__dirname, () => {
       const cFSM = new CharacterFSM(emitter, {}, transitions);
       let timeout = null;
       return new Promise((resolve, reject) => {
+        emitter.once('stateChange', reject);
         emitter.emit('not_done', { event: 'not_done' });
         const updated = cFSM.tick(new Date().getTime() + 10);
         assert.isNotOk(updated, 'should have updated')
         timeout = setTimeout(() => {
-          if (cFSM.state.action === STATES.IDLE) {
-            resolve()
+          if (cFSM.state.action === ACTIONS.IDLE) {
+            resolve();
           } else {
-            reject('Timedout!');
+            reject('Shouldn\t have update!');
           }
           clearTimeout(timeout);
         }, 200);
-      })
+      });
     });
 
     it('should transition and fire an event', () => {
@@ -43,7 +44,7 @@ describe(__dirname, () => {
       let timeout = null;
       let resolved = false;
       return new Promise((resolve, reject) => {
-        emitter.once('action', resolve);
+        emitter.once('stateChange', resolve);
         emitter.emit('done', { event: 'done' });
         const updated = cFSM.tick(new Date().getTime() + 10);
         assert.isOk(updated, 'should have updated')
