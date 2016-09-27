@@ -18,6 +18,7 @@ describe(__dirname, () => {
           return {
             id: fsm.state.id + 1,
             action: 'DONE',
+            start:0,
           };
         },
       },
@@ -27,6 +28,7 @@ describe(__dirname, () => {
     it('should ignore an event with no transitions', (done) => {
       const cFSM = new CharacterFSM({}, emitter, transitions);
       emitter.emit('not done', {});
+      cFSM.tick(new Date().getTime());
       assert(cFSM.state.action === STATES.IDLE, 'should remind idle');
       done();
     });
@@ -34,6 +36,7 @@ describe(__dirname, () => {
     it('should transition with the correct event', (done) => {
       const cFSM = new CharacterFSM({}, emitter, transitions);
       emitter.emit('done', {});
+      cFSM.tick(new Date().getTime());
       assert(cFSM.state.action === 'DONE', 'should change state');
       done();
     });
@@ -63,6 +66,7 @@ describe(__dirname, () => {
     it('should create a new state', (done) => {
       const cFSM = new CharacterFSM({}, emitter, transitions);
       emitter.emit('start', {});
+      cFSM.tick(new Date().getTime());
       assert(cFSM.state.action === 'STARTED', 'should change state');
       const startedId = cFSM.state.id;
       for (let i = 1; i < 10; i++) {
