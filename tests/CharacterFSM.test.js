@@ -20,11 +20,11 @@ describe(__dirname, () => {
 
     it('should ignore an event with no transitions', () => {
       const emitter = eventEmitter();
-      const cFSM = new CharacterFSM({}, emitter, transitions);
+      const cFSM = new CharacterFSM(emitter, {}, transitions);
       let timeout = null;
       return new Promise((resolve, reject) =>{
         emitter.emit('not_done', {event:'not_done'});
-        const updated = cFSM.tick(new Date().getTime());
+        const updated = cFSM.tick(new Date().getTime()+10);
         assert.isNotOk(updated, 'should have updated')
         timeout = setTimeout(() => {
           if (cFSM.state.action === STATES.IDLE) {
@@ -39,13 +39,13 @@ describe(__dirname, () => {
 
     it('should transition and fire an event', () => {
       const emitter = eventEmitter();
-      const cFSM = new CharacterFSM({}, emitter, transitions);
+      const cFSM = new CharacterFSM(emitter, {}, transitions);
       let timeout = null;
       let resolved = false;
       return new Promise((resolve, reject) => {
         emitter.once('action', resolve);
         emitter.emit('done', {event:'done'});
-        const updated = cFSM.tick(new Date().getTime());
+        const updated = cFSM.tick(new Date().getTime()+10);
         assert.isOk(updated, 'should have updated')
         timeout = setTimeout(() => {
           if (!resolved) {
@@ -70,7 +70,6 @@ describe(__dirname, () => {
           return {
             id: 0, // using an int uuid so we can count
             action: 'STARTED',
-            started: new Date().getTime(),
             duration:0,
             next(fsm) {
               return {
@@ -84,14 +83,14 @@ describe(__dirname, () => {
     };
     const emitter = eventEmitter();
 
-    it('should create a new state', (done) => {
-      const cFSM = new CharacterFSM({}, emitter, transitions);
+    it('should create a new next state', (done) => {
+      const cFSM = new CharacterFSM(emitter, {}, transitions);
       emitter.emit('start', {event:'start'});
-      cFSM.tick(new Date().getTime());
+      cFSM.tick(new Date().getTime()+10);
       assert(cFSM.state.action === 'STARTED', 'should change state');
       const startedId = cFSM.state.id;
       for (let i = 1; i < 10; i++) {
-        cFSM.tick(new Date().getTime());
+        cFSM.tick(new Date().getTime()+i*(10+i));
         assert(cFSM.state.id === startedId + i, 'should have increased the id');
       }
       done();
