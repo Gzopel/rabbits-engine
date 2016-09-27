@@ -5,7 +5,7 @@ import { STATES } from '../lib/FSM/states';
 import { CharacterFSM } from '../lib/FSM/CharacterFSM';
 
 describe(__dirname, () => {
-  describe('A fsm with a transition', () => {
+  describe('A fsm with a transition ', () => {
     const transitions = {
       done: {
         IDLE: (fsm, event) => {
@@ -17,23 +17,34 @@ describe(__dirname, () => {
         },
       },
     };
-    const emitter = eventEmitter();
-    /*
-    it('should ignore an event with no transitions', (done) => {
-      const cFSM = new CharacterFSM({}, emitter, transitions);
-      emitter.emit('not done', {});
-      cFSM.tick(new Date().getTime());
-      assert(cFSM.state.action === STATES.IDLE, 'should remind idle');
-      done();
-    });*/
 
-    it('should transition with the correct event', (done) => {
+    it('should ignore an event with no transitions', () => {
+      const emitter = eventEmitter();
+      const cFSM = new CharacterFSM({}, emitter, transitions);
+      let timeout = null;
+      return new Promise((resolve, reject) =>{
+        emitter.emit('not_done', {event:'not_done'});
+        const updated = cFSM.tick(new Date().getTime());
+        assert.isNotOk(updated, 'should have updated')
+        timeout = setTimeout(() => {
+          if (cFSM.state.action === STATES.IDLE) {
+            resolve()
+          } else {
+            reject('Timedout!');
+          }
+          clearTimeout(timeout);
+        }, 200);
+      })
+    });
+
+    it('should transition and fire an event', () => {
+      const emitter = eventEmitter();
       const cFSM = new CharacterFSM({}, emitter, transitions);
       let timeout = null;
       let resolved = false;
-      new Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         emitter.once('action', resolve);
-        emitter.emit('done', {event:done});
+        emitter.emit('done', {event:'done'});
         const updated = cFSM.tick(new Date().getTime());
         assert.isOk(updated, 'should have updated')
         timeout = setTimeout(() => {
@@ -45,15 +56,13 @@ describe(__dirname, () => {
       }).then(((state) => {
         resolved = true;
         assert(state.action === 'DONE', 'should change state');
-        done();
       }))
       .catch((error) => {
        assert.isNotOk(error,'Promise error');
-        done();
       });
     });
   });
-/*
+
   describe('On tick',() => {
     const transitions = {
       start: {
@@ -77,7 +86,7 @@ describe(__dirname, () => {
 
     it('should create a new state', (done) => {
       const cFSM = new CharacterFSM({}, emitter, transitions);
-      emitter.emit('start', {});
+      emitter.emit('start', {event:'start'});
       cFSM.tick(new Date().getTime());
       assert(cFSM.state.action === 'STARTED', 'should change state');
       const startedId = cFSM.state.id;
@@ -87,7 +96,5 @@ describe(__dirname, () => {
       }
       done();
     });
-  });*/
-
-  // TODO: test that emits action on transitions
+  });
 });
