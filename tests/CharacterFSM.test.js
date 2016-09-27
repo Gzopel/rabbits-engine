@@ -5,12 +5,6 @@ import { STATES } from '../lib/FSM/states';
 import { CharacterFSM } from '../lib/FSM/CharacterFSM';
 
 describe(__dirname, () => {
-  it('Should create a character fsm', (done) => {
-    const cFSM = new CharacterFSM({}, {}, {});
-    assert(cFSM.state.action === STATES.IDLE, 'should start as idle');
-    done();
-  });
-
   describe('A fsm with a transition', () => {
     const transitions = {
       done: {
@@ -24,24 +18,42 @@ describe(__dirname, () => {
       },
     };
     const emitter = eventEmitter();
-
+    /*
     it('should ignore an event with no transitions', (done) => {
       const cFSM = new CharacterFSM({}, emitter, transitions);
       emitter.emit('not done', {});
       cFSM.tick(new Date().getTime());
       assert(cFSM.state.action === STATES.IDLE, 'should remind idle');
       done();
-    });
+    });*/
 
     it('should transition with the correct event', (done) => {
       const cFSM = new CharacterFSM({}, emitter, transitions);
-      emitter.emit('done', {});
-      cFSM.tick(new Date().getTime());
-      assert(cFSM.state.action === 'DONE', 'should change state');
-      done();
+      let timeout = null;
+      let resolved = false;
+      new Promise((resolve, reject) => {
+        emitter.once('action', resolve);
+        emitter.emit('done', {event:done});
+        const updated = cFSM.tick(new Date().getTime());
+        assert.isOk(updated, 'should have updated')
+        timeout = setTimeout(() => {
+          if (!resolved) {
+            reject('Timedout!');
+          }
+          clearTimeout(timeout);
+        }, 200);
+      }).then(((state) => {
+        resolved = true;
+        assert(state.action === 'DONE', 'should change state');
+        done();
+      }))
+      .catch((error) => {
+       assert.isNotOk(error,'Promise error');
+        done();
+      });
     });
   });
-
+/*
   describe('On tick',() => {
     const transitions = {
       start: {
@@ -75,7 +87,7 @@ describe(__dirname, () => {
       }
       done();
     });
-  });
+  });*/
 
   // TODO: test that emits action on transitions
 });
