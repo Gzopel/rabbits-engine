@@ -22,9 +22,9 @@ describe(__dirname, () => {
       const emitter = eventEmitter();
       const cFSM = new CharacterFSM(emitter, {}, transitions);
       let timeout = null;
-      return new Promise((resolve, reject) =>{
-        emitter.emit('not_done', {event:'not_done'});
-        const updated = cFSM.tick(new Date().getTime()+10);
+      return new Promise((resolve, reject) => {
+        emitter.emit('not_done', { event: 'not_done' });
+        const updated = cFSM.tick(new Date().getTime() + 10);
         assert.isNotOk(updated, 'should have updated')
         timeout = setTimeout(() => {
           if (cFSM.state.action === STATES.IDLE) {
@@ -44,8 +44,8 @@ describe(__dirname, () => {
       let resolved = false;
       return new Promise((resolve, reject) => {
         emitter.once('action', resolve);
-        emitter.emit('done', {event:'done'});
-        const updated = cFSM.tick(new Date().getTime()+10);
+        emitter.emit('done', { event: 'done' });
+        const updated = cFSM.tick(new Date().getTime() + 10);
         assert.isOk(updated, 'should have updated')
         timeout = setTimeout(() => {
           if (!resolved) {
@@ -58,7 +58,7 @@ describe(__dirname, () => {
         assert(state.action === 'DONE', 'should change state');
       }))
       .catch((error) => {
-       assert.isNotOk(error,'Promise error');
+        assert.isNotOk(error, 'Promise error');
       });
     });
   });
@@ -85,12 +85,12 @@ describe(__dirname, () => {
 
     it('should create a new next state', (done) => {
       const cFSM = new CharacterFSM(emitter, {}, transitions);
-      emitter.emit('start', {event:'start'});
-      cFSM.tick(new Date().getTime()+10);
+      emitter.emit('start', { event: 'start' });
+      cFSM.tick(new Date().getTime() + 10);
       assert(cFSM.state.action === 'STARTED', 'should change state');
       const startedId = cFSM.state.id;
       for (let i = 1; i < 10; i++) {
-        cFSM.tick(new Date().getTime()+i*(10+i));
+        cFSM.tick(new Date().getTime() + (i * (10 + i)));
         assert(cFSM.state.id === startedId + i, 'should have increased the id');
       }
       done();
