@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import eventEmitter from 'event-emitter';
 
-import ACTIONS from '../lib/rules/actions';
+import { ACTIONS } from '../lib/rules/rules';
 import { buildState } from '../lib/FSM/states';
 import { PlayerFSM } from '../lib/FSM/PlayerFSM';
 
@@ -27,10 +27,10 @@ describe(__filename, () => {
     });
   });
 
-  describe('A walking player ', () => {
+  describe('A walking player', () => {
     const transitions = {
       start: {
-        IDLE: () => {
+        idle: () => {
           return buildState(ACTIONS.WALKING, { direction: { x: 5, z: 0 } });
         },
       },

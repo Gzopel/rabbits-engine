@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import diceRoll from '../lib/dice';
+import diceRoll from '../lib/rules/dice';
 
 
 describe(__filename, () => {

@@ -1,14 +1,14 @@
 import { assert } from 'chai';
 import eventEmitter from 'event-emitter';
 
-import { ACTIONS } from '../lib/rules/actions.js';
+import { ACTIONS } from '../lib/rules/rules';
 import { CharacterFSM } from '../lib/FSM/CharacterFSM';
 
 describe(__filename, () => {
   describe('A fsm with a transition ', () => {
     const transitions = {
       done: {
-        IDLE: (fsm, event) => {
+        idle: (fsm, event) => {
           return {
             id: fsm.state.id + 1,
             action: 'DONE',
@@ -34,7 +34,7 @@ describe(__filename, () => {
             reject('Shouldn\t have update!');
           }
           clearTimeout(timeout);
-        }, 200);
+        }, 100);
       });
     });
 
@@ -53,13 +53,13 @@ describe(__filename, () => {
             reject('Timedout!');
           }
           clearTimeout(timeout);
-        }, 200);
+        }, 100);
       }).then(((state) => {
         resolved = true;
         assert(state.action === 'DONE', 'should change state');
       }))
       .catch((error) => {
-        assert.isNotOk(error, 'Promise error');
+        assert.isNotOk(error, `Promise error ${error}`);
       });
     });
   });
@@ -67,7 +67,7 @@ describe(__filename, () => {
   describe('On tick',() => {
     const transitions = {
       start: {
-        IDLE: (fsm, event) => {
+        idle: (fsm, event) => {
           return {
             id: 0, // using an int uuid so we can count
             action: 'STARTED',
