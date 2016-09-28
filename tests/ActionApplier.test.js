@@ -94,8 +94,8 @@ describe(__filename, () => {
       const testFn = (update) => {
         assert(update.character === characterTwo.id, 'Should update character two');
         assert(update.result === 'walk');
-        assert(characterTwo.position.z > archerOldZ, 'Should increase z position')
-        assert(characterTwo.position.x === 0, 'Should not increase x position')
+        assert(characterTwo.position.z > archerOldZ, 'Should increase z position');
+        assert(characterTwo.position.x === 0, 'Should not increase x position');
         emitter.off('characterUpdate', testFn);
         done();
       };
@@ -131,8 +131,8 @@ describe(__filename, () => {
       const testFn = (update) => {
         assert(update.character === characterOne.id, 'Should update character one');
         assert(update.result === 'walk');
-        assert(characterOne.position.z > axeOldZ, 'Should increase z position')
-        assert(characterOne.position.x === 0, 'Should not increase x position')
+        assert(characterOne.position.z > axeOldZ, 'Should increase z position');
+        assert(characterOne.position.x === 0, 'Should not increase x position');
         emitter.off('characterUpdate', testFn);
         done();
       };
