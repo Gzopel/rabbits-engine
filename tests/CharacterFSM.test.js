@@ -4,7 +4,7 @@ import eventEmitter from 'event-emitter';
 import { ACTIONS } from '../lib/rules/actions.js';
 import { CharacterFSM } from '../lib/FSM/CharacterFSM';
 
-describe(__dirname, () => {
+describe(__filename, () => {
   describe('A fsm with a transition ', () => {
     const transitions = {
       done: {

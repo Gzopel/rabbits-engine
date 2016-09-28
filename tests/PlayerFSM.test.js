@@ -5,7 +5,7 @@ import ACTIONS from '../lib/rules/actions';
 import { buildState } from '../lib/FSM/states';
 import { PlayerFSM } from '../lib/FSM/PlayerFSM';
 
-describe(__dirname, () => {
+describe(__filename, () => {
   describe('A playerFSM working as an action queue', () => {
     it('should receive actions and excuted them in each tick', (done) => {
       const pFSM = new PlayerFSM({}, {});

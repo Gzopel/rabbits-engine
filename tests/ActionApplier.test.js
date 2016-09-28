@@ -4,7 +4,7 @@ import eventEmitter from 'event-emitter';
 import ACTIONS from '../lib/rules/actions';
 import ActionApplier from '../lib/rules/ActionApplier';
 
-describe(__dirname, () => {
+describe(__filename, () => {
   const characterOne = {
     id:1,
     position: { x: 0, z: 1 },
@@ -14,6 +14,7 @@ describe(__dirname, () => {
         range: 1,
         type:'AXE',
         damage: 4,
+        difficulty: 7,
       },
     },
     sheet: {
@@ -21,6 +22,7 @@ describe(__dirname, () => {
         physical: {
           strength: 2,
           dexterity: 2,
+          stamina: 3,
         },
       },
       abilities: {
@@ -41,6 +43,7 @@ describe(__dirname, () => {
         range: 20,
         type:'BOW',
         damage: 7,
+        difficulty: 7,
       },
     },
     sheet: {
@@ -67,7 +70,7 @@ describe(__dirname, () => {
     const emitter = eventEmitter();
     const applier = new ActionApplier(emitter, characters);
 
-    it('Axe should hit', (done) => {
+    it('1. Axe should hit', (done) => {
       const testFn = (update) => {
         assert(update.aggressor === characterOne.id, 'Character one should be the aggressor');
         assert(update.character === characterTwo.id, 'Should update character two');
@@ -86,7 +89,7 @@ describe(__dirname, () => {
       });
     });
 
-    it('Archer should flee', (done) => {
+    it('2. Archer should flee', (done) => {
       const archerOldZ = characterTwo.position.z;
       const testFn = (update) => {
         assert(update.character === characterTwo.id, 'Should update character two');
@@ -104,8 +107,7 @@ describe(__dirname, () => {
       });
     });
 
-    it('Archer should be able to attack from the distance', (done) => {
-      const archerOldZ = characterTwo.position.z;
+    it('3. Archer should be able to attack from the distance', (done) => {
       const testFn = (update) => {
         assert(update.aggressor === characterTwo.id, 'Character two should be the aggressor');
         assert(update.character === characterOne.id, 'Should update character one');
@@ -124,7 +126,7 @@ describe(__dirname, () => {
       });
     });
 
-    it('Axe should try to hit but move instead', (done) => {
+    it('4. Axe should try to hit but move instead', (done) => {
       const axeOldZ = characterOne.position.z;
       const testFn = (update) => {
         assert(update.character === characterOne.id, 'Should update character one');
