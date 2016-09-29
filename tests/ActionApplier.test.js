@@ -11,7 +11,7 @@ describe(__filename, () => {
   describe('Move collition', () => {
     const characterOne =JSON.parse(JSON.stringify(axeGuy))
     const characterTwo = JSON.parse(JSON.stringify(archer));
-    const characters = { 1: characterOne, 2: characterTwo };
+    const characters = new Map([[1, characterOne], [2, characterTwo]]);
     const emitter = eventEmitter();
     const applier = new ActionApplier(emitter, characters);
 
@@ -59,7 +59,7 @@ describe(__filename, () => {
   describe('Epic fight!', () => {
     const characterOne = JSON.parse(JSON.stringify(axeGuy))
     const characterTwo = JSON.parse(JSON.stringify(archer));
-    const characters = { 1: characterOne, 2: characterTwo };
+    const characters = new Map([[1, characterOne], [2, characterTwo]]);
     const emitter = eventEmitter();
     const applier = new ActionApplier(emitter, characters);
 
