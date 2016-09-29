@@ -32,6 +32,29 @@ describe(__filename, () => {
       });
     });
 
+    it('should collide after updating position if there is a gap', (done) => {
+      characterOne.position.x = 2;
+      characterOne.position.z = 2;
+      characterTwo.position.x = 5;
+      characterTwo.position.z = 5;
+      const testFn = (update) => {
+        assert(update.character === characterTwo.id, 'Should update character two');
+        assert(update.result === 'collision', 'Should collide');
+        console.log(characterTwo);
+        assert(characterTwo.position.z < 5, 'Should increase z position');
+        assert(characterTwo.position.z > 2, 'but not that much');
+        assert(characterTwo.position.x < 5, 'Should increase x position');
+        assert(characterTwo.position.x > 2, 'but not that much');
+        emitter.off('characterUpdate', testFn);
+        done();
+      };
+      emitter.on('characterUpdate', testFn);
+      emitter.emit('newState', {
+        action: ACTIONS.WALKING,
+        owner: characterTwo.id,
+        direction: { x: 0, z: 0},
+      });
+    });
   });
 
   describe('Epic fight!', () => {
