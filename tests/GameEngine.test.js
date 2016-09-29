@@ -32,6 +32,7 @@ describe(__filename, () => {
       assert(event.position, 'should have a position');
       assert(event.position.x > axeGuy.position.x, 'should have increased x');
       assert(event.position.z > axeGuy.position.z, 'should have increased z');
+      assert.equal(event.timestamp, timestamp, 'should have tick timestamp');
       emitter.off('characterUpdate', testFn);
       done();
     };

@@ -37,7 +37,7 @@ describe(__filename, () => {
     });
   });
 
-  describe('On tick',() => {
+  describe('On tick', () => {
     const transitions = {
       start: {
         idle: (fsm, event) => {
