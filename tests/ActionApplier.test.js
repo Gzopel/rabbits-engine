@@ -2,7 +2,7 @@ import { assert } from 'chai';
 import eventEmitter from 'event-emitter';
 
 import { ACTIONS } from '../lib/rules/rules';
-import ActionApplier from '../lib/rules/ActionApplier';
+import ActionApplier from '../lib/ActionApplier';
 
 const axeGuy = require('./testData/axeGuy.json');
 const archer = require('./testData/archer.json');
