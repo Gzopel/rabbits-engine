@@ -7,19 +7,19 @@ import { PlayerFSM } from '../lib/FSM/PlayerFSM';
 
 describe(__filename, () => {
   describe('A playerFSM working as an action queue', () => {
-    it('should receive actions and excuted them in each tick', (done) => {
-      const pFSM = new PlayerFSM({}, {});
+    it('should receive actions and executed them in each tick', (done) => {
+      const pFSM = new PlayerFSM({}, {id: 1});
       for (let i = 1; i < 10; i++) {
         pFSM.newAction({
           id: i,
-          action: 'FAKE_ACTION',
-          duration: 0,
-          start: 0,
+          character: 1,
+          type: ACTIONS.WALKING,
+          direction: { x: 10 * i, z: 10 * i },
         });
       }
       const start = new Date().getTime();
       for (let i = 1; i < 10; i++) {
-        pFSM.tick(new Date().getTime() + (i * (10 + i)))
+        pFSM.tick(new Date().getTime() + (i * (10 + i)));
         assert(pFSM.state.id === i, 'correct id');
         assert(pFSM.state.start > start, 'positive start');
       }
@@ -56,7 +56,7 @@ describe(__filename, () => {
     })
 
     it('should keep walking until it reaches the target', (done) => {
-      const character = { position: { x: 0, z: 0 } };
+      const character = { id: 1, position: { x: 0, z: 0 } };
       const cFSM = new PlayerFSM(emitter, character, transitions);
       emitter.emit('start', { event: 'start' });
       cFSM.tick(new Date().getTime() + 10);
@@ -66,7 +66,11 @@ describe(__filename, () => {
         steps++;
         character.position.x++;
         if (steps === 3) {
-          cFSM.newAction(buildState(ACTIONS.BASIC_ATTACK), { target:12321 });
+          cFSM.newAction({
+            type: ACTIONS.BASIC_ATTACK,
+            target: 12321,
+            character: character.id,
+          });
         }
         cFSM.tick(new Date().getTime() + (steps * (10 + steps)));
       }
@@ -75,5 +79,4 @@ describe(__filename, () => {
       done();
     })
   })
-
 });
