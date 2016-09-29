@@ -1,0 +1,29 @@
+{
+  "id":1,
+  "position": { "x": 0, "z": 1 },
+  "health": 7,
+  "items": {
+    "weapon": {
+      "range": 1,
+      "type": "AXE",
+      "damage": 4,
+      "difficulty": 7
+    }
+  },
+  "sheet": {
+    "attributes": {
+      "physical": {
+        "strength": 2,
+        "dexterity": 2,
+        "stamina": 3
+      }
+    },
+    "abilities": {
+      "talents": {},
+      "skills": {
+        "melee": 2
+      }
+    },
+    "maxHealth": 7
+  }
+}

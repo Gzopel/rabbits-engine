@@ -1,0 +1,31 @@
+{
+  "id": 2,
+  "position": { "x": 0, "z": 2 },
+  "health": 7,
+  "items": {
+    "weapon": {
+      "range": 20,
+      "type":"BOW",
+      "damage": 7,
+      "difficulty": 7
+    }
+  },
+  "sheet": {
+    "attributes": {
+      "physical": {
+        "dexterity": 2,
+        "stamina": 3
+      }
+    },
+    "abilities": {
+      "talents": {
+        "athletics": 2,
+        "dodge": 2
+      },
+      "skills": {
+        "archery": 2
+      }
+    },
+    "maxHealth": 7
+  }
+}
