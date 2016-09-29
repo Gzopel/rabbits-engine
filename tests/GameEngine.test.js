@@ -29,8 +29,8 @@ describe(__filename, () => {
       assert.equal(event.result, ACTIONS.WALKING, 'not the expected event');
       assert.equal(event.character, axeGuy.id, 'not the expected player');
       assert(event.position, 'should have a position');
-      assert(event.position.x, 'should have a position (x)');
-      assert(event.position.z, 'should have a position (z)');
+      assert(event.position.x > axeGuy.position.x, 'should have increased x');
+      assert(event.position.z > axeGuy.position.z, 'should have increased z');
       emitter.off('characterUpdate', testFn);
       done();
     };

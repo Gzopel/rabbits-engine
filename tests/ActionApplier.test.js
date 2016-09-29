@@ -40,7 +40,6 @@ describe(__filename, () => {
       const testFn = (update) => {
         assert(update.character === characterTwo.id, 'Should update character two');
         assert(update.result === 'collision', 'Should collide');
-        console.log(characterTwo);
         assert(characterTwo.position.z < 5, 'Should increase z position');
         assert(characterTwo.position.z > 2, 'but not that much');
         assert(characterTwo.position.x < 5, 'Should increase x position');

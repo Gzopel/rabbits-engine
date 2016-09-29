@@ -21,46 +21,19 @@ describe(__filename, () => {
     it('should ignore an event with no transitions', () => {
       const emitter = eventEmitter();
       const cFSM = new CharacterFSM(emitter, {}, transitions);
-      let timeout = null;
-      return new Promise((resolve, reject) => {
-        emitter.once('stateChange', reject);
-        emitter.emit('not_done', { event: 'not_done' });
-        const updated = cFSM.tick(new Date().getTime() + 10);
-        assert.isNotOk(updated, 'should have updated')
-        timeout = setTimeout(() => {
-          if (cFSM.state.action === ACTIONS.IDLE) {
-            resolve();
-          } else {
-            reject('Shouldn\t have update!');
-          }
-          clearTimeout(timeout);
-        }, 100);
-      });
+      emitter.emit('not_done', { event: 'not_done' });
+      const updated = cFSM.tick(new Date().getTime() + 10);
+      assert.isNotOk(updated, 'should have updated');
+      assert(cFSM.state.action === ACTIONS.IDLE, 'should stay idle')
     });
 
     it('should transition and fire an event', () => {
       const emitter = eventEmitter();
       const cFSM = new CharacterFSM(emitter, {}, transitions);
-      let timeout = null;
-      let resolved = false;
-      return new Promise((resolve, reject) => {
-        emitter.once('stateChange', resolve);
-        emitter.emit('done', { event: 'done' });
-        const updated = cFSM.tick(new Date().getTime() + 10);
-        assert.isOk(updated, 'should have updated')
-        timeout = setTimeout(() => {
-          if (!resolved) {
-            reject('Timedout!');
-          }
-          clearTimeout(timeout);
-        }, 100);
-      }).then(((state) => {
-        resolved = true;
-        assert(state.action === 'DONE', 'should change state');
-      }))
-      .catch((error) => {
-        assert.isNotOk(error, `Promise error ${error}`);
-      });
+      emitter.emit('done', { event: 'done' });
+      const updated = cFSM.tick(new Date().getTime() + 10);
+      assert.isOk(updated, 'should have updated');
+      assert(cFSM.state.action === 'DONE', 'should change state');
     });
   });
 
