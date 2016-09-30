@@ -67,7 +67,8 @@ describe(__filename, () => {
       const testFn = (update) => {
         assert(update.aggressor === characterOne.id, 'Character one should be the aggressor');
         assert(update.character === characterTwo.id, 'Should update character two');
-        assert(update.result === 'damaged' || update.result === 'block' || update.result === 'dodge');
+        assert(update.result === 'damaged' || update.result === 'block'
+          || update.result === 'dodge'|| update.result === 'missed');
         if (update.result === 'damaged') {
           assert(update.damage > 0, 'if damaged there should be damage');
         }
