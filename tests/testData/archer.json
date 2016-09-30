@@ -6,8 +6,8 @@
     "weapon": {
       "range": 20,
       "type":"BOW",
-      "damage": 7,
-      "difficulty": 7
+      "damage": 70,
+      "difficulty": 1
     }
   },
   "sheet": {

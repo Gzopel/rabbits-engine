@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import eventEmitter from 'event-emitter';
+import { EventEmitter2 } from 'eventemitter2';
 
 import { ACTIONS } from '../lib/rules/rules';
 import ActionApplier from '../lib/ActionApplier';
@@ -12,7 +12,7 @@ describe(__filename, () => {
     const characterOne =JSON.parse(JSON.stringify(axeGuy))
     const characterTwo = JSON.parse(JSON.stringify(archer));
     const characters = new Map([[1, characterOne], [2, characterTwo]]);
-    const emitter = eventEmitter();
+    const emitter = new EventEmitter2();
     const applier = new ActionApplier(emitter, characters);
 
     it('should collide instantly if next to each other', (done) => {
@@ -21,7 +21,7 @@ describe(__filename, () => {
         assert(update.result === 'collision', 'Should collide');
         assert(characterTwo.position.z === archer.position.z, 'Should not increase z position');
         assert(characterTwo.position.x === archer.position.x, 'Should not increase x position');
-        emitter.off('characterUpdate', testFn);
+        emitter.removeListener('characterUpdate', testFn);
         done();
       };
       emitter.on('characterUpdate', testFn);
@@ -44,7 +44,7 @@ describe(__filename, () => {
         assert(characterTwo.position.z > 2, 'but not that much');
         assert(characterTwo.position.x < 5, 'Should increase x position');
         assert(characterTwo.position.x > 2, 'but not that much');
-        emitter.off('characterUpdate', testFn);
+        emitter.removeListener('characterUpdate', testFn);
         done();
       };
       emitter.on('characterUpdate', testFn);
@@ -60,7 +60,7 @@ describe(__filename, () => {
     const characterOne = JSON.parse(JSON.stringify(axeGuy))
     const characterTwo = JSON.parse(JSON.stringify(archer));
     const characters = new Map([[1, characterOne], [2, characterTwo]]);
-    const emitter = eventEmitter();
+    const emitter = new EventEmitter2();
     const applier = new ActionApplier(emitter, characters);
 
     it('1. Axe should hit', (done) => {
@@ -72,7 +72,7 @@ describe(__filename, () => {
         if (update.result === 'damaged') {
           assert(update.damage > 0, 'if damaged there should be damage');
         }
-        emitter.off('characterUpdate', testFn);
+        emitter.removeListener('characterUpdate', testFn);
         done();
       };
       emitter.on('characterUpdate', testFn);
@@ -89,14 +89,14 @@ describe(__filename, () => {
         assert(update.result === 'walk', 'should be walking');
         assert(characterTwo.position.z > archer.position.z, 'Should increase z position');
         assert(characterTwo.position.x === archer.position.x, 'Should not increase x position');
-        emitter.off('characterUpdate', testFn);
+        emitter.removeListener('characterUpdate', testFn);
         done();
       };
       emitter.on('characterUpdate', testFn);
       emitter.emit('newState', {
         action: ACTIONS.WALKING,
         owner: characterTwo.id,
-        direction: { x: 0, z: 20},
+        direction: { x: 0, z: 40},
       });
     });
 
@@ -109,7 +109,7 @@ describe(__filename, () => {
         if (update.result === 'damaged') {
           assert(update.damage > 0, 'if damaged there should be damage');
         }
-        emitter.off('characterUpdate', testFn);
+        emitter.removeListener('characterUpdate', testFn);
         done();
       };
       emitter.on('characterUpdate', testFn);
@@ -120,13 +120,20 @@ describe(__filename, () => {
       });
     });
 
+
+
     it('4. Axe should try to hit but move instead', (done) => {
+      emitter.emit('newState', { //lets miove the archer further away.
+        action: ACTIONS.WALKING,
+        owner: characterTwo.id,
+        direction: { x: 0, z: 40},
+      });
       const testFn = (update) => {
         assert(update.character === characterOne.id, 'Should update character one');
         assert(update.result === 'walk', 'Should be walking');
         assert(characterOne.position.z > axeGuy.position.z, 'Should increase z position');
         assert(characterOne.position.x === axeGuy.position.x, 'Should not increase x position');
-        emitter.off('characterUpdate', testFn);
+        emitter.removeListener('characterUpdate', testFn);
         done();
       };
       emitter.on('characterUpdate', testFn);

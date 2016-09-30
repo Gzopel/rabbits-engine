@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import eventEmitter from 'event-emitter';
+import { EventEmitter2 } from 'eventemitter2';
 
 import { ACTIONS } from '../lib/rules/rules';
 import { buildState } from '../lib/FSM/states';
@@ -9,6 +9,7 @@ describe(__filename, () => {
   describe('A playerFSM working as an action queue', () => {
     it('should receive actions and executed them in each tick', (done) => {
       const pFSM = new PlayerFSM({}, {id: 1});
+      const timestamp = new Date().getTime();
       for (let i = 1; i < 10; i++) {
         pFSM.newAction({
           id: i,
@@ -19,7 +20,8 @@ describe(__filename, () => {
       }
       const start = new Date().getTime();
       for (let i = 1; i < 10; i++) {
-        pFSM.tick(new Date().getTime() + (i * (10 + i)));
+        pFSM.tick(timestamp + (i * 100));
+        console.log(pFSM.state);
         assert(pFSM.state.id === i, 'correct id');
         assert(pFSM.state.start > start, 'positive start');
       }
@@ -35,20 +37,21 @@ describe(__filename, () => {
         },
       },
     };
-    const emitter = eventEmitter();
+    const emitter = new EventEmitter2();
 
     it('should keep walking until it reaches the target', (done) => {
+      const timestamp = new Date().getTime();
       const character = { position:{ x: 0, z: 0 } };
       const cFSM = new PlayerFSM(emitter, character, transitions);
-      emitter.emit('start', { event: 'start' });
-      cFSM.tick(new Date().getTime()+10);
+      emitter.emit('start', { type: 'start' });
+      cFSM.tick(timestamp + 100);
       assert(cFSM.state.action === ACTIONS.WALKING, 'should change state');
       let steps = 0;
       while (cFSM.state.action === ACTIONS.WALKING) {
         assert.isBelow(steps, 5);
         steps++;
         character.position.x++;
-        cFSM.tick(new Date().getTime() + (steps * (10 + steps)));
+        cFSM.tick(timestamp + (steps * 200));
       }
       assert(cFSM.state.action === ACTIONS.IDLE, 'should change state');
       assert(character.position.x === 5, 'should complete the walk')
@@ -56,10 +59,11 @@ describe(__filename, () => {
     })
 
     it('should keep walking until it reaches the target', (done) => {
+      const timestamp = new Date().getTime();
       const character = { id: 1, position: { x: 0, z: 0 } };
       const cFSM = new PlayerFSM(emitter, character, transitions);
-      emitter.emit('start', { event: 'start' });
-      cFSM.tick(new Date().getTime() + 10);
+      emitter.emit('start', { type: 'start' });
+      cFSM.tick(timestamp + 100);
       assert(cFSM.state.action === ACTIONS.WALKING, 'should change state');
       let steps = 0;
       while(cFSM.state.action === ACTIONS.WALKING) {
@@ -72,7 +76,7 @@ describe(__filename, () => {
             character: character.id,
           });
         }
-        cFSM.tick(new Date().getTime() + (steps * (10 + steps)));
+        cFSM.tick(timestamp + 200);
       }
       assert(cFSM.state.action === ACTIONS.BASIC_ATTACK, 'should change state');
       assert(character.position.x === 3, 'shouldn\'t complete the walk')

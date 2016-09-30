@@ -9,9 +9,9 @@ const axeGuy = require('./testData/axeGuy.json');
 const archer = require('./testData/archer.json');
 
 describe(__filename, () => {
-  /*describe('Basic player usage', () => {
+  describe('Basic player usage', () => {
 
-    const emitter = eventEmitter();
+    const emitter = new EventEmitter2();
     const engine = new GameEngine(emitter);
     const character = JSON.parse(JSON.stringify(axeGuy));
 
@@ -19,8 +19,8 @@ describe(__filename, () => {
       // For some reason this tests fails 1/20 times TODO look into it.
       const testFn = (event) => {
         assert.deepEqual(event.character, character, 'not the expected character');
-        assert.equal(event.type , 'player', 'not the expected type');
-        emitter.off('newCharacter', testFn);
+        assert.equal(event.characterType, 'player', 'not the expected type');
+        emitter.removeListener('newCharacter', testFn);
         done();
       };
       emitter.on('newCharacter', testFn);
@@ -28,7 +28,7 @@ describe(__filename, () => {
     });
 
     it('2. Given a walk action should emmit \'characterUpdate\' event after tick', (done) => {
-      const timestamp = new Date().getTime();
+      const timestamp = new Date().getTime() + 100;
       const testFn = (event) => {
         assert.equal(event.type, 'characterUpdate', 'not the expected event');
         assert.equal(event.result, ACTIONS.WALKING, 'not the expected event');
@@ -37,7 +37,7 @@ describe(__filename, () => {
         assert(event.position.x > axeGuy.position.x, 'should have increased x');
         assert(event.position.z > axeGuy.position.z, 'should have increased z');
         assert.equal(event.timestamp, timestamp, 'should have tick timestamp');
-        emitter.off('characterUpdate', testFn);
+        emitter.removeListener('characterUpdate', testFn);
         done();
       };
       emitter.on('characterUpdate', testFn);
@@ -49,7 +49,7 @@ describe(__filename, () => {
       engine.tick(timestamp);
     });
   });
-*/
+/*
   describe('NPC transitions integration', () => {
     const start = new Date().getTime();
     const emitter = new EventEmitter2();
@@ -64,7 +64,6 @@ describe(__filename, () => {
       engine.addCharacter(characterTwo, 'NPC', agressiveTransitions);
       return new Promise((resolve) => {
         const testFn = (event) => {
-          console.log("GOT EVENT",event);
           if (event.character === archer.id) {
             if (event.result === 'damaged') {
               emitter.removeListener('characterUpdate', testFn);
@@ -79,5 +78,5 @@ describe(__filename, () => {
         }
       });
     })
-  });
+  });*/
 });

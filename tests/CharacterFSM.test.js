@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import eventEmitter from 'event-emitter';
+import { EventEmitter2 } from 'eventemitter2';
 
 import { ACTIONS } from '../lib/rules/rules';
 import { CharacterFSM } from '../lib/FSM/CharacterFSM';
@@ -19,19 +19,19 @@ describe(__filename, () => {
     };
 
     it('should ignore an event with no transitions', () => {
-      const emitter = eventEmitter();
+      const emitter = new EventEmitter2();
       const cFSM = new CharacterFSM(emitter, {}, transitions);
-      emitter.emit('not_done', { event: 'not_done' });
+      emitter.emit('not_done', { type: 'not_done' });
       const updated = cFSM.tick(new Date().getTime() + 10);
       assert.isNotOk(updated, 'should have updated');
       assert(cFSM.state.action === ACTIONS.IDLE, 'should stay idle')
     });
 
     it('should transition and fire an event', () => {
-      const emitter = eventEmitter();
+      const emitter = new EventEmitter2();
       const cFSM = new CharacterFSM(emitter, {}, transitions);
-      emitter.emit('done', { event: 'done' });
-      const updated = cFSM.tick(new Date().getTime() + 10);
+      emitter.emit('done', { type: 'done' });
+      const updated = cFSM.tick(new Date().getTime() + 100);
       assert.isOk(updated, 'should have updated');
       assert(cFSM.state.action === 'DONE', 'should change state');
     });
@@ -55,16 +55,17 @@ describe(__filename, () => {
         }
       },
     };
-    const emitter = eventEmitter();
+    const emitter = new EventEmitter2();
 
     it('should create a new next state', (done) => {
+      const timestamp = new Date().getTime();
       const cFSM = new CharacterFSM(emitter, {}, transitions);
-      emitter.emit('start', { event: 'start' });
-      cFSM.tick(new Date().getTime() + 10);
+      emitter.emit('start', { type: 'start' });
+      cFSM.tick(timestamp + 100);
       assert(cFSM.state.action === 'STARTED', 'should change state');
       const startedId = cFSM.state.id;
       for (let i = 1; i < 10; i++) {
-        cFSM.tick(new Date().getTime() + (i * (10 + i)));
+        cFSM.tick(timestamp + (i * 200));
         assert(cFSM.state.id === startedId + i, 'should have increased the id');
       }
       done();
