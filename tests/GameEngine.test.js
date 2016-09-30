@@ -56,12 +56,12 @@ describe(__filename, () => {
     const engine = new GameEngine(emitter);
     const characterOne = JSON.parse(JSON.stringify(axeGuy));
     const characterTwo = JSON.parse(JSON.stringify(archer));
-    const aggressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE])
+    const agressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE])
     const defensiveTransitions = buildTransitionTable([TRIGGERS.attackWhenAttackedAndIDLE,
       TRIGGERS.attackWhenAttackedAndWalking, TRIGGERS.uneasy, TRIGGERS.idleAfterCollision]);
     it('Archer should attack walking axeGuy, this should retaliate', () => {
       engine.addCharacter(characterOne, 'NPC', defensiveTransitions);
-      engine.addCharacter(characterTwo, 'NPC', aggressiveTransitions);
+      engine.addCharacter(characterTwo, 'NPC', agressiveTransitions);
       return new Promise((resolve) => {
         const testFn = (event) => {
           if (event.character === archer.id) {
