@@ -12,7 +12,7 @@ describe(__filename, () => {
       const timestamp = new Date().getTime();
       for (let i = 1; i < 10; i++) {
         pFSM.newAction({
-          id: i,
+          actionId: i,
           character: 1,
           type: ACTIONS.WALKING,
           direction: { x: 10 * i, z: 10 * i },
@@ -21,7 +21,7 @@ describe(__filename, () => {
       const start = new Date().getTime();
       for (let i = 1; i < 10; i++) {
         pFSM.tick(timestamp + (i * 100));
-        assert(pFSM.state.id === i, 'correct id');
+        assert(pFSM.state.actionId === i, 'correct id');
         assert(pFSM.state.start > start, 'positive start');
       }
       done();
