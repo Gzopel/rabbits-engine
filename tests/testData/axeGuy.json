@@ -6,8 +6,8 @@
     "weapon": {
       "range": 3,
       "type": "AXE",
-      "damage": 41,
-      "difficulty": 1
+      "damage": 4,
+      "difficulty": 6
     }
   },
   "sheet": {

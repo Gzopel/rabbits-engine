@@ -21,7 +21,6 @@ describe(__filename, () => {
       const start = new Date().getTime();
       for (let i = 1; i < 10; i++) {
         pFSM.tick(timestamp + (i * 100));
-        console.log(pFSM.state);
         assert(pFSM.state.id === i, 'correct id');
         assert(pFSM.state.start > start, 'positive start');
       }

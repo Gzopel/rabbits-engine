@@ -49,34 +49,35 @@ describe(__filename, () => {
       engine.tick(timestamp);
     });
   });
-/*
+
   describe('NPC transitions integration', () => {
     const start = new Date().getTime();
     const emitter = new EventEmitter2();
     const engine = new GameEngine(emitter);
     const characterOne = JSON.parse(JSON.stringify(axeGuy));
     const characterTwo = JSON.parse(JSON.stringify(archer));
-    const agressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE])
+    const aggressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE])
     const defensiveTransitions = buildTransitionTable([TRIGGERS.attackWhenAttackedAndIDLE,
       TRIGGERS.attackWhenAttackedAndWalking, TRIGGERS.uneasy, TRIGGERS.idleAfterCollision]);
     it('Archer should attack walking axeGuy, this should retaliate', () => {
       engine.addCharacter(characterOne, 'NPC', defensiveTransitions);
-      engine.addCharacter(characterTwo, 'NPC', agressiveTransitions);
+      engine.addCharacter(characterTwo, 'NPC', aggressiveTransitions);
       return new Promise((resolve) => {
         const testFn = (event) => {
           if (event.character === archer.id) {
-            if (event.result === 'damaged') {
+            if (event.result === 'damaged' || event.result === 'block'
+               || event.result === 'dodge' || event.result === 'missed') {
               emitter.removeListener('characterUpdate', testFn);
-              return resolve();
+              resolve();
             }
           }
         };
         emitter.on('characterUpdate', testFn);
         emitter.emit('start the uneasy guy', { type: 'time to move' });
-        for (let i = 1; i < 100; i++ ) {
+        for (let i = 1; i < 100; i++) {
           engine.tick(start + (40 * i));
         }
       });
     })
-  });*/
+  });
 });
