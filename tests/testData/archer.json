@@ -14,16 +14,20 @@
     "attributes": {
       "physical": {
         "dexterity": 2,
-        "stamina": 3
+        "stamina": 2
+      },
+      "mental":{
+        "perception": 4
       }
     },
     "abilities": {
       "talents": {
+        "alertness": 4,
         "athletics": 2,
         "dodge": 2
       },
       "skills": {
-        "archery": 2
+        "archery": 5
       }
     },
     "maxHealth": 7

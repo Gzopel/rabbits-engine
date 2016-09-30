@@ -4,24 +4,26 @@
   "health": 7,
   "items": {
     "weapon": {
-      "range": 1,
+      "range": 3,
       "type": "AXE",
       "damage": 4,
-      "difficulty": 7
+      "difficulty": 6
     }
   },
   "sheet": {
     "attributes": {
       "physical": {
-        "strength": 2,
+        "strength": 4,
         "dexterity": 2,
-        "stamina": 3
+        "stamina": 2
       }
     },
     "abilities": {
-      "talents": {},
+      "talents": {
+        "athletics": 2
+      },
       "skills": {
-        "melee": 2
+        "melee": 5
       }
     },
     "maxHealth": 7

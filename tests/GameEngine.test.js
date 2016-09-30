@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import eventEmitter from 'event-emitter';
+import { EventEmitter2 } from 'eventemitter2';
 
 import { ACTIONS } from '../lib/rules/rules';
 import GameEngine from '../lib/GameEngine';
@@ -9,7 +9,7 @@ const axeGuy = require('./testData/axeGuy.json');
 const archer = require('./testData/archer.json');
 
 describe(__filename, () => {
-  describe('Basic player usage', () => {
+  /*describe('Basic player usage', () => {
 
     const emitter = eventEmitter();
     const engine = new GameEngine(emitter);
@@ -49,31 +49,35 @@ describe(__filename, () => {
       engine.tick(timestamp);
     });
   });
-
+*/
   describe('NPC transitions integration', () => {
-    const emitter = eventEmitter();
+    const start = new Date().getTime();
+    const emitter = new EventEmitter2();
     const engine = new GameEngine(emitter);
     const characterOne = JSON.parse(JSON.stringify(axeGuy));
     const characterTwo = JSON.parse(JSON.stringify(archer));
     const agressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE])
     const defensiveTransitions = buildTransitionTable([TRIGGERS.attackWhenAttackedAndIDLE,
-      TRIGGERS.attackWhenAttackedAndWalking, TRIGGERS.unEasy]);
+      TRIGGERS.attackWhenAttackedAndWalking, TRIGGERS.uneasy, TRIGGERS.idleAfterCollision]);
     it('Archer should attack walking axeGuy, this should retaliate', () => {
       engine.addCharacter(characterOne, 'NPC', defensiveTransitions);
       engine.addCharacter(characterTwo, 'NPC', agressiveTransitions);
-      const testFn = (event) => {
-        if (event.character === archer.id) {
-          if (event.result === 'damaged') {
-            emitter.off('newCharacter', testFn);
-            return done();
+      return new Promise((resolve) => {
+        const testFn = (event) => {
+          console.log("GOT EVENT",event);
+          if (event.character === archer.id) {
+            if (event.result === 'damaged') {
+              emitter.removeListener('characterUpdate', testFn);
+              return resolve();
+            }
           }
+        };
+        emitter.on('characterUpdate', testFn);
+        emitter.emit('start the uneasy guy', { type: 'time to move' });
+        for (let i = 1; i < 100; i++ ) {
+          engine.tick(start + (40 * i));
         }
-        assert(event.character === axeGuy.id, 'Only axe guy updates');
-      };
-      emitter.on('characterUpdate', testFn);
-      for (let i = 0; i < 100; i++ ) {
-        engine.tick(40*i)
-      }
+      });
     })
   });
 });
