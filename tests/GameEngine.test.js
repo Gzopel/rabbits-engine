@@ -47,6 +47,18 @@ describe(__filename, () => {
       });
       engine.tick(timestamp);
     });
+    
+    it('3. Should allow player to leave and will emit \'rmCharacter\' event', (done) => {
+      const testFn = (event) => {
+        assert.equal(event.characterId, character.id, 'not the expected id');
+        emitter.removeListener('rmCharacter', testFn);
+        done();
+      };
+      emitter.on('rmCharacter', testFn);
+      engine.addCharacter(character, 'player');
+      engine.removeCharacter(character.id);
+    });
+
   });
 
   // For some reason this test fails sometimes TODO look into it.
