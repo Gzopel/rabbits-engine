@@ -117,37 +117,110 @@ describe(__filename, () => {
 
   });
 
-
-
-  // For some reason this test fails sometimes TODO look into it.
- /* describe('NPC transitions integration', () => {
-    const start = new Date().getTime();
-    const emitter = new EventEmitter2();
-    const engine = new GameEngine(emitter);
-    const characterOne = JSON.parse(JSON.stringify(axeGuy));
-    const characterTwo = JSON.parse(JSON.stringify(archer));
-    const agressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE])
-    const defensiveTransitions = buildTransitionTable([TRIGGERS.attackWhenAttackedAndIDLE,
-      TRIGGERS.attackWhenAttackedAndWalking, TRIGGERS.uneasy, TRIGGERS.idleAfterCollision]);
-    it('Archer should attack walking axeGuy, this should retaliate', () => {
-      engine.addCharacter(characterOne, 'NPC', defensiveTransitions);
-      engine.addCharacter(characterTwo, 'NPC', agressiveTransitions);
+  describe('NPC transitions integration', () => {
+    it('Archer should attack walking axeGuy', () => {
+      let timestamp = new Date().getTime() +100;
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const characterOne = JSON.parse(JSON.stringify(axeGuy));
+      characterOne.position.x = 4;
+      characterOne.position.z = 4;
+      const characterTwo = JSON.parse(JSON.stringify(archer));
+      characterTwo.position.x = 2;
+      characterTwo.position.z = 2;
+      const aggressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE]);
+      engine.addCharacter(characterOne, 'player');
+      engine.addCharacter(characterTwo, 'NPC', aggressiveTransitions);
       return new Promise((resolve) => {
         const testFn = (event) => {
-          if (event.character === archer.id) {
-            if (event.result === 'damaged' || event.result === 'block'
-               || event.result === 'dodge' || event.result === 'missed') {
-              emitter.removeListener('characterUpdate', testFn);
-              resolve();
-            }
+          if (event.character === characterOne.id
+            && (event.result === 'damaged' || event.result === 'block'
+            || event.result === 'dodge' || event.result === 'missed')) {
+            emitter.removeListener('characterUpdate', testFn);
+            return resolve();
           }
+          timestamp += 100;
+          engine.tick(timestamp);
+        };
+        emitter.on('characterUpdate', testFn);
+        engine.handlePlayerAction({
+          character: characterOne.id,
+          type: ACTIONS.WALKING,
+          direction: { x: 20, z: 20},
+        });
+        engine.tick(timestamp);
+      });
+    })
+
+    it('AxeGuy should retaliate archer\'s attack', () => {
+      let timestamp = new Date().getTime() +100;
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const characterOne = JSON.parse(JSON.stringify(axeGuy));
+      characterOne.position.x = 4;
+      characterOne.position.z = 4;
+      const characterTwo = JSON.parse(JSON.stringify(archer));
+      characterTwo.position.x = 2;
+      characterTwo.position.z = 2;
+      const defensiveTransitions = buildTransitionTable([TRIGGERS.attackWhenAttackedAndIDLE,
+        TRIGGERS.attackWhenAttackedAndWalking]);
+      engine.addCharacter(characterOne, 'NPC', defensiveTransitions);
+      engine.addCharacter(characterTwo, 'player');
+      return new Promise((resolve) => {
+        const testFn = (event) => {
+          if (event.character === characterTwo.id
+            && (event.result === 'damaged' || event.result === 'block'
+            || event.result === 'dodge' || event.result === 'missed')) {
+            emitter.removeListener('characterUpdate', testFn);
+            return resolve();
+          }
+          timestamp += 100;
+          engine.tick(timestamp);
+        };
+        emitter.on('characterUpdate', testFn);
+        engine.handlePlayerAction({
+          character: characterTwo.id,
+          type: ACTIONS.BASIC_ATTACK,
+          target: characterOne.id,
+        });
+        engine.tick(timestamp);
+      });
+    })
+
+
+
+    // For some reason this test fails sometimes TODO look into it.
+    // Seems like idleAfter collision is not working, and
+    // attack when idle doesn't detect collision either;
+/*
+     it('Archer should attack walking axeGuy, this should retaliate', () => {
+       let timestamp = new Date().getTime() +100;
+       const emitter = new EventEmitter2();
+       const engine = new GameEngine(map, emitter);
+       const characterOne = JSON.parse(JSON.stringify(axeGuy));
+       const characterTwo = JSON.parse(JSON.stringify(archer));
+       const agressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE])
+       const defensiveTransitions = buildTransitionTable([TRIGGERS.attackWhenAttackedAndIDLE,
+         TRIGGERS.attackWhenAttackedAndWalking, TRIGGERS.uneasy, TRIGGERS.idleAfterCollision]);
+       engine.addCharacter(characterOne, 'NPC', defensiveTransitions);
+       engine.addCharacter(characterTwo, 'NPC', agressiveTransitions);
+       return new Promise((resolve) => {
+       const testFn = (event) => {
+         console.log(event)
+         if (event.character === archer.id
+           && (event.result === 'damaged' || event.result === 'block'
+         || event.result === 'dodge' || event.result === 'missed')) {
+           emitter.removeListener('characterUpdate', testFn);
+           resolve();
+         }
+         timestamp += 100;
+         engine.tick(timestamp);
         };
         emitter.on('characterUpdate', testFn);
         emitter.emit('start the uneasy guy', { type: 'time to move' });
-        for (let i = 1; i < 100; i++) {
-          engine.tick(start + (40 * i));
-        }
-      });
-    })
-  });*/
+        engine.tick(timestamp);
+       });
+     });*/
+
+  });
 });
