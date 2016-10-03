@@ -12,12 +12,11 @@ const map = { size: { x: 400, z: 400 } };
 describe(__filename, () => {
   describe('Basic player usage', () => {
 
-    const emitter = new EventEmitter2();
-    const engine = new GameEngine(map, emitter);
-    const character = JSON.parse(JSON.stringify(axeGuy));
-    let prevTimestamp = new Date().getTime() + 100;
-
     it('1. Should allow player to join and will emit \'newCharacter\' event', (done) => {
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const character = JSON.parse(JSON.stringify(axeGuy));
+
       const testFn = (event) => {
         assert.deepEqual(event.character, character, 'not the expected character');
         assert.equal(event.characterType, 'player', 'not the expected type');
@@ -28,40 +27,54 @@ describe(__filename, () => {
       engine.addCharacter(character, 'player');
     });
 
-    it('2. Given a walk action should emmit \'characterUpdate\' event after tick', (done) => {
+    it('2. Given a walk action should emmit \'characterUpdate\' event after tick', () => {
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const character = JSON.parse(JSON.stringify(axeGuy));
+
+      let prevTimestamp = new Date().getTime() + 100;
       let prevX = axeGuy.position.x;
       let prevZ = axeGuy.position.z;
       const targetX = 10;
-      const targetZ = 100;
-      const testFn = (event) => {
-        assert.equal(event.type, 'characterUpdate', 'not the expected event');
-        assert.equal(event.result, ACTIONS.WALKING, 'not the expected event');
-        assert.equal(event.character, axeGuy.id, 'not the expected player');
-        assert(event.position, 'should have a position');
-        assert(event.position.x > prevX, 'should have increased x');
-        assert(event.position.x <= targetX, 'not that much');
-        assert(event.position.z > prevZ, 'should have increased z');
-        assert(event.position.z <= targetZ, 'not that much');
-        assert.equal(event.timestamp, prevTimestamp, 'should have tick timestamp');
+      const targetZ = 50;
+      return new Promise((resolve) => {
+        const testFn = (event) => {
+          console.log(event);
+          assert.equal(event.type, 'characterUpdate', 'not the expected event');
+          assert.equal(event.result, ACTIONS.WALKING, 'not the expected event');
+          assert.equal(event.character, axeGuy.id, 'not the expected player');
+          assert(event.position, 'should have a position');
+          assert(event.position.x > prevX, 'should have increased x');
+          assert(event.position.x <= targetX, 'not that much');
+          assert(event.position.z > prevZ, 'should have increased z');
+          assert(event.position.z <= targetZ, 'not that much');
+          assert.equal(event.timestamp, prevTimestamp, 'should have tick timestamp');
 
-        if (event.position.x === targetX && event.position.z === targetZ) {
-          emitter.removeListener('characterUpdate', testFn);
-          done();
-          return;
-        }
-        prevTimestamp+=100;
+          if (event.position.x === targetX && event.position.z === targetZ) {
+            emitter.removeListener('characterUpdate', testFn);
+            resolve();
+            return;
+          }
+          prevTimestamp+=100;
+          engine.tick(prevTimestamp);
+        };
+        engine.addCharacter(character, 'player');
+        emitter.on('characterUpdate', testFn);
+        engine.handlePlayerAction({
+          character: character.id,
+          type: ACTIONS.WALKING,
+          direction: { x: targetX, z: targetZ},
+        });
         engine.tick(prevTimestamp);
-      };
-      emitter.on('characterUpdate', testFn);
-      engine.handlePlayerAction({
-        character: character.id,
-        type: ACTIONS.WALKING,
-        direction: { x: targetX, z: targetZ},
       });
-      engine.tick(prevTimestamp);
     });
 
     it('3. Should emit a collision after walking off the border', () => {
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const character = JSON.parse(JSON.stringify(axeGuy));
+      let prevTimestamp = new Date().getTime() + 100;
+
       return new Promise((resolve) => {
         const testFn = (event) => {
           assert.equal(event.type, 'characterUpdate', 'not the expected event');
@@ -74,14 +87,15 @@ describe(__filename, () => {
             return resolve();
           }
           assert.equal(event.result, 'walk', 'not the expected event');
-          prevTimestamp = event.timestamp;
-          engine.tick(prevTimestamp+100);
+          prevTimestamp +=100;
+          engine.tick(prevTimestamp);
         };
+        engine.addCharacter(character, 'player');
         emitter.on('characterUpdate', testFn);
         engine.handlePlayerAction({
           character: character.id,
           type: ACTIONS.WALKING,
-          direction: { x: -100, z: 100 },
+          direction: { x: -100, z: 50 },
         });
         prevTimestamp += 100;
         engine.tick(prevTimestamp);
@@ -89,6 +103,9 @@ describe(__filename, () => {
     });
 
     it('4. Should allow player to leave and will emit \'rmCharacter\' event', (done) => {
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const character = JSON.parse(JSON.stringify(axeGuy));
       const testFn = (event) => {
         assert.equal(event.characterId, character.id, 'not the expected id');
         emitter.removeListener('rmCharacter', testFn);
