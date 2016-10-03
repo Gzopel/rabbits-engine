@@ -39,7 +39,6 @@ describe(__filename, () => {
       const targetZ = 50;
       return new Promise((resolve) => {
         const testFn = (event) => {
-          console.log(event);
           assert.equal(event.type, 'characterUpdate', 'not the expected event');
           assert.equal(event.result, ACTIONS.WALKING, 'not the expected event');
           assert.equal(event.character, axeGuy.id, 'not the expected player');
