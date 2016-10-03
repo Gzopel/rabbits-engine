@@ -7,13 +7,15 @@ import { buildTransitionTable, TRIGGERS }from '../lib/FSM/transitions';
 
 const axeGuy = require('./testData/axeGuy.json');
 const archer = require('./testData/archer.json');
+const map = { size: { x: 400, z: 400 } };
 
 describe(__filename, () => {
   describe('Basic player usage', () => {
 
     const emitter = new EventEmitter2();
-    const engine = new GameEngine(emitter);
+    const engine = new GameEngine(map, emitter);
     const character = JSON.parse(JSON.stringify(axeGuy));
+    let prevTimestamp = new Date().getTime() + 100;
 
     it('1. Should allow player to join and will emit \'newCharacter\' event', (done) => {
       const testFn = (event) => {
@@ -27,28 +29,66 @@ describe(__filename, () => {
     });
 
     it('2. Given a walk action should emmit \'characterUpdate\' event after tick', (done) => {
-      const timestamp = new Date().getTime() + 100;
+      let prevX = axeGuy.position.x;
+      let prevZ = axeGuy.position.z;
+      const targetX = 10;
+      const targetZ = 100;
       const testFn = (event) => {
         assert.equal(event.type, 'characterUpdate', 'not the expected event');
         assert.equal(event.result, ACTIONS.WALKING, 'not the expected event');
         assert.equal(event.character, axeGuy.id, 'not the expected player');
         assert(event.position, 'should have a position');
-        assert(event.position.x > axeGuy.position.x, 'should have increased x');
-        assert(event.position.z > axeGuy.position.z, 'should have increased z');
-        assert.equal(event.timestamp, timestamp, 'should have tick timestamp');
-        emitter.removeListener('characterUpdate', testFn);
-        done();
+        assert(event.position.x > prevX, 'should have increased x');
+        assert(event.position.x <= targetX, 'not that much');
+        assert(event.position.z > prevZ, 'should have increased z');
+        assert(event.position.z <= targetZ, 'not that much');
+        assert.equal(event.timestamp, prevTimestamp, 'should have tick timestamp');
+
+        if (event.position.x === targetX && event.position.z === targetZ) {
+          emitter.removeListener('characterUpdate', testFn);
+          done();
+          return;
+        }
+        prevTimestamp+=100;
+        engine.tick(prevTimestamp);
       };
       emitter.on('characterUpdate', testFn);
       engine.handlePlayerAction({
         character: character.id,
         type: ACTIONS.WALKING,
-        direction: { x: 10, z: 10 },
+        direction: { x: targetX, z: targetZ},
       });
-      engine.tick(timestamp);
+      engine.tick(prevTimestamp);
     });
-    
-    it('3. Should allow player to leave and will emit \'rmCharacter\' event', (done) => {
+
+    it('3. Should emit a collision after walking off the border', () => {
+      return new Promise((resolve) => {
+        const testFn = (event) => {
+          assert.equal(event.type, 'characterUpdate', 'not the expected event');
+          assert.equal(event.character, axeGuy.id, 'not the expected player');
+          assert(event.position, 'should have a position');
+          assert(event.position.x >= 0, 'x should be positive');
+          assert(event.position.z >= 0, 'z should be positive');
+          if (event.result === 'collision') {
+            emitter.removeListener('characterUpdate', testFn);
+            return resolve();
+          }
+          assert.equal(event.result, 'walk', 'not the expected event');
+          prevTimestamp = event.timestamp;
+          engine.tick(prevTimestamp+100);
+        };
+        emitter.on('characterUpdate', testFn);
+        engine.handlePlayerAction({
+          character: character.id,
+          type: ACTIONS.WALKING,
+          direction: { x: -100, z: 100 },
+        });
+        prevTimestamp += 100;
+        engine.tick(prevTimestamp);
+      });
+    });
+
+    it('4. Should allow player to leave and will emit \'rmCharacter\' event', (done) => {
       const testFn = (event) => {
         assert.equal(event.characterId, character.id, 'not the expected id');
         emitter.removeListener('rmCharacter', testFn);
@@ -60,6 +100,8 @@ describe(__filename, () => {
     });
 
   });
+
+
 
   // For some reason this test fails sometimes TODO look into it.
  /* describe('NPC transitions integration', () => {

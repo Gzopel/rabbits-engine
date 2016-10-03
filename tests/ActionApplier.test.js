@@ -6,6 +6,7 @@ import ActionApplier from '../lib/ActionApplier';
 
 const axeGuy = require('./testData/axeGuy.json');
 const archer = require('./testData/archer.json');
+const map = { size: { x: 400, z: 400 } };
 
 describe(__filename, () => {
   describe('Move collition', () => {
@@ -13,7 +14,7 @@ describe(__filename, () => {
     const characterTwo = JSON.parse(JSON.stringify(archer));
     const characters = new Map([[1, characterOne], [2, characterTwo]]);
     const emitter = new EventEmitter2();
-    const applier = new ActionApplier(emitter, characters);
+    const applier = new ActionApplier(map, emitter, characters);
 
     it('should collide instantly if next to each other', (done) => {
       const testFn = (update) => {
@@ -61,7 +62,7 @@ describe(__filename, () => {
     const characterTwo = JSON.parse(JSON.stringify(archer));
     const characters = new Map([[1, characterOne], [2, characterTwo]]);
     const emitter = new EventEmitter2();
-    const applier = new ActionApplier(emitter, characters);
+    const applier = new ActionApplier(map, emitter, characters);
 
     it('1. Axe should hit', (done) => {
       const testFn = (update) => {
@@ -96,7 +97,7 @@ describe(__filename, () => {
       emitter.emit('newState', {
         action: ACTIONS.WALKING,
         owner: characterTwo.id,
-        direction: { x: 0, z: 40},
+        direction: { x: archer.position.x, z: 40},
       });
     });
 
@@ -126,13 +127,13 @@ describe(__filename, () => {
       emitter.emit('newState', { //lets miove the archer further away.
         action: ACTIONS.WALKING,
         owner: characterTwo.id,
-        direction: { x: 0, z: 40},
+        direction: { x: archer.position.x, z: 40},
       });
       const testFn = (update) => {
         assert(update.character === characterOne.id, 'Should update character one');
         assert(update.result === 'walk', 'Should be walking');
         assert(characterOne.position.z > axeGuy.position.z, 'Should increase z position');
-        assert(characterOne.position.x === axeGuy.position.x, 'Should not increase x position');
+        assert(characterOne.position.x >= axeGuy.position.x, 'Should not decrease x position');
         emitter.removeListener('characterUpdate', testFn);
         done();
       };

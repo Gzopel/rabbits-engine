@@ -1,6 +1,6 @@
 {
   "id":1,
-  "position": { "x": 0, "z": 1 },
+  "position": { "x": 1, "z": 1 },
   "health": 7,
   "items": {
     "weapon": {
