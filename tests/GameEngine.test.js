@@ -150,7 +150,7 @@ describe(__filename, () => {
         });
         engine.tick(timestamp);
       });
-    })
+    });
 
     it('AxeGuy should retaliate archer\'s attack', () => {
       let timestamp = new Date().getTime() +100;
@@ -185,28 +185,48 @@ describe(__filename, () => {
         });
         engine.tick(timestamp);
       });
-    })
+    });
+
+    it('UneasyGuy should retaliate archer\'s attack', () => {
+      let timestamp = new Date().getTime() +100;
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const characterOne = JSON.parse(JSON.stringify(axeGuy));
+      characterOne.position.x = 4;
+      characterOne.position.z = 4;
+      const uneasy = buildTransitionTable([TRIGGERS.uneasy]);
+      engine.addCharacter(characterOne, 'NPC', uneasy);
+      return new Promise((resolve) => {
+        const testFn = (event) => {
+          if (event.character === characterOne.id
+            && (event.result === 'walk' || event.result === 'collision')) {
+            emitter.removeListener('characterUpdate', testFn);
+            return resolve();
+          }
+          timestamp += 100;
+          engine.tick(timestamp);
+        };
+        emitter.on('characterUpdate', testFn);
+        emitter.emit('some randon even', {type:'move uneasy guy'});
+        engine.tick(timestamp);
+      });
+    });
 
 
 
-    // For some reason this test fails sometimes TODO look into it.
-    // Seems like idleAfter collision is not working, and
-    // attack when idle doesn't detect collision either;
-/*
      it('Archer should attack walking axeGuy, this should retaliate', () => {
        let timestamp = new Date().getTime() +100;
        const emitter = new EventEmitter2();
        const engine = new GameEngine(map, emitter);
        const characterOne = JSON.parse(JSON.stringify(axeGuy));
        const characterTwo = JSON.parse(JSON.stringify(archer));
-       const agressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE])
+       const aggressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE])
        const defensiveTransitions = buildTransitionTable([TRIGGERS.attackWhenAttackedAndIDLE,
          TRIGGERS.attackWhenAttackedAndWalking, TRIGGERS.uneasy, TRIGGERS.idleAfterCollision]);
        engine.addCharacter(characterOne, 'NPC', defensiveTransitions);
-       engine.addCharacter(characterTwo, 'NPC', agressiveTransitions);
+       engine.addCharacter(characterTwo, 'NPC', aggressiveTransitions);
        return new Promise((resolve) => {
        const testFn = (event) => {
-         console.log(event)
          if (event.character === archer.id
            && (event.result === 'damaged' || event.result === 'block'
          || event.result === 'dodge' || event.result === 'missed')) {
@@ -220,7 +240,6 @@ describe(__filename, () => {
         emitter.emit('start the uneasy guy', { type: 'time to move' });
         engine.tick(timestamp);
        });
-     });*/
-
+     });
   });
 });
