@@ -309,7 +309,8 @@ describe(__filename, () => {
        const aggressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE,
          TRIGGERS.stopAttackingWhenResultIdle]);
        const defensiveTransitions = buildTransitionTable([TRIGGERS.attackWhenAttackedAndIDLE,
-         TRIGGERS.attackWhenAttackedAndWalking, TRIGGERS.uneasy, TRIGGERS.idleAfterCollision]);
+         TRIGGERS.attackWhenAttackedAndWalking, TRIGGERS.uneasy, TRIGGERS.idleAfterCollision,
+         TRIGGERS.resumeAttackAfterCollision]);
        engine.addCharacter(characterOne, 'NPC', defensiveTransitions);
        engine.addCharacter(characterTwo, 'NPC', aggressiveTransitions);
        return new Promise((resolve) => {
