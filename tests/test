@@ -1,0 +1,18 @@
+class Test {
+  constructor(){
+    this.a=1;
+  }
+  inc(){
+    return this.a++;
+  }
+  inc2 = () =>{
+    return this.a++;
+  }
+};
+
+var test = new Test();
+
+console.log(test.inc());
+console.log(test.inc());
+console.log(test.inc2());
+console.log(test.inc2());

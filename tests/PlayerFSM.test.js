@@ -8,8 +8,8 @@ import { PlayerFSM } from '../lib/FSM/PlayerFSM';
 describe(__filename, () => {
   describe('A playerFSM working as an action queue', () => {
     it('should receive actions and executed them in each tick', (done) => {
-      const pFSM = new PlayerFSM({}, {id: 1});
-      const timestamp = new Date().getTime();
+      const pFSM = new PlayerFSM({}, { id: 1 });
+      let timestamp = new Date().getTime();
       for (let i = 1; i < 10; i++) {
         pFSM.newAction({
           actionId: i,
@@ -20,7 +20,8 @@ describe(__filename, () => {
       }
       const start = new Date().getTime();
       for (let i = 1; i < 10; i++) {
-        pFSM.tick(timestamp + (i * 100));
+        timestamp += 100;
+        pFSM.tick(timestamp);
         assert(pFSM.state.actionId === i, 'correct id');
         assert(pFSM.state.start > start, 'positive start');
       }
@@ -31,9 +32,9 @@ describe(__filename, () => {
   describe('A walking player', () => {
     const transitions = {
       start: {
-        idle: () => {
+        idle: [() => {
           return buildState(ACTIONS.WALKING, { direction: { x: 5, z: 0 } });
-        },
+        }],
       },
     };
     const emitter = new EventEmitter2();
@@ -57,7 +58,7 @@ describe(__filename, () => {
       done();
     })
 
-    it('should keep walking until it reaches the target', (done) => {
+    it('should keep walking until a new actions is queued', (done) => {
       const timestamp = new Date().getTime();
       const character = { id: 1, position: { x: 0, z: 0 } };
       const cFSM = new PlayerFSM(emitter, character, transitions);
@@ -67,7 +68,6 @@ describe(__filename, () => {
       let steps = 0;
       while(cFSM.state.action === ACTIONS.WALKING) {
         steps++;
-        character.position.x++;
         if (steps === 3) {
           cFSM.newAction({
             type: ACTIONS.BASIC_ATTACK,
@@ -78,7 +78,6 @@ describe(__filename, () => {
         cFSM.tick(timestamp + 200);
       }
       assert(cFSM.state.action === ACTIONS.BASIC_ATTACK, 'should change state');
-      assert(character.position.x === 3, 'shouldn\'t complete the walk')
       done();
     })
   })

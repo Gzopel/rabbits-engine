@@ -8,13 +8,13 @@ describe(__filename, () => {
   describe('A fsm with a transition ', () => {
     const transitions = {
       done: {
-        idle: (fsm, event) => {
+        idle: [(fsm, event) => {
           return {
             id: fsm.state.id + 1,
             action: 'DONE',
             start:0,
           };
-        },
+        }],
       },
     };
 
@@ -40,7 +40,7 @@ describe(__filename, () => {
   describe('On tick', () => {
     const transitions = {
       start: {
-        idle: (fsm, event) => {
+        idle: [(fsm, event) => {
           return {
             id: 0, // using an int uuid so we can count
             action: 'STARTED',
@@ -52,7 +52,7 @@ describe(__filename, () => {
               };
             }
           };
-        }
+        }]
       },
     };
     const emitter = new EventEmitter2();

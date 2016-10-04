@@ -11,8 +11,7 @@ const map = { size: { x: 400, z: 400 } };
 
 describe(__filename, () => {
   describe('Basic player usage', () => {
-
-    it('1. Should allow player to join and will emit \'newCharacter\' event', (done) => {
+    it('should allow player to join and will emit \'newCharacter\' event', (done) => {
       const emitter = new EventEmitter2();
       const engine = new GameEngine(map, emitter);
       const character = JSON.parse(JSON.stringify(axeGuy));
@@ -27,7 +26,7 @@ describe(__filename, () => {
       engine.addCharacter(character, 'player');
     });
 
-    it('2. Given a walk action should emmit \'characterUpdate\' event after tick', () => {
+    it('given a walk action should emmit \'characterUpdate\' event after tick', () => {
       const emitter = new EventEmitter2();
       const engine = new GameEngine(map, emitter);
       const character = JSON.parse(JSON.stringify(axeGuy));
@@ -68,7 +67,7 @@ describe(__filename, () => {
       });
     });
 
-    it('3. Should emit a collision after walking off the border', () => {
+    it('should emit a collision after walking off the border', () => {
       const emitter = new EventEmitter2();
       const engine = new GameEngine(map, emitter);
       const character = JSON.parse(JSON.stringify(axeGuy));
@@ -101,7 +100,7 @@ describe(__filename, () => {
       });
     });
 
-    it('4. Should allow player to leave and will emit \'rmCharacter\' event', (done) => {
+    it('should allow player to leave and will emit \'rmCharacter\' event', (done) => {
       const emitter = new EventEmitter2();
       const engine = new GameEngine(map, emitter);
       const character = JSON.parse(JSON.stringify(axeGuy));
@@ -115,6 +114,35 @@ describe(__filename, () => {
       engine.removeCharacter(character.id);
     });
 
+    it('should be idle after attacking a disconnected player', () => {
+      let timestamp = new Date().getTime() +100;
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const characterOne = JSON.parse(JSON.stringify(axeGuy));
+      const characterTwo = JSON.parse(JSON.stringify(archer));
+      engine.addCharacter(characterOne, 'player',buildTransitionTable('stopAttackingWhenResultIdle'));
+      engine.addCharacter(characterTwo, 'player');
+      return new Promise((resolve) => {
+        const testFn = (event) => {
+          if (event.character === characterTwo.id
+            && event.result === 'idle') {
+            emitter.removeListener('characterUpdate', testFn);
+            return resolve();
+          }
+
+          timestamp += 100;
+          engine.tick(timestamp);
+        };
+        emitter.on('characterUpdate', testFn);
+        engine.handlePlayerAction({
+          character: characterTwo.id,
+          type: ACTIONS.BASIC_ATTACK,
+          target: characterOne.id,
+        });
+        engine.removeCharacter(characterOne.id);
+        engine.tick(timestamp);
+      });
+    });
   });
 
   describe('NPC transitions integration', () => {
@@ -146,7 +174,7 @@ describe(__filename, () => {
         engine.handlePlayerAction({
           character: characterOne.id,
           type: ACTIONS.WALKING,
-          direction: { x: 20, z: 20},
+          direction: { x: 20, z: 20 },
         });
         engine.tick(timestamp);
       });
@@ -187,7 +215,7 @@ describe(__filename, () => {
       });
     });
 
-    it('UneasyGuy should retaliate archer\'s attack', () => {
+    it('UneasyGuy should move on any event', () => {
       let timestamp = new Date().getTime() +100;
       const emitter = new EventEmitter2();
       const engine = new GameEngine(map, emitter);
@@ -207,12 +235,10 @@ describe(__filename, () => {
           engine.tick(timestamp);
         };
         emitter.on('characterUpdate', testFn);
-        emitter.emit('some randon even', {type:'move uneasy guy'});
+        emitter.emit('some random event', { type: 'move uneasy guy' });
         engine.tick(timestamp);
       });
     });
-
-
 
      it('Archer should attack walking axeGuy, this should retaliate', () => {
        let timestamp = new Date().getTime() +100;
