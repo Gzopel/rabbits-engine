@@ -204,6 +204,42 @@ describe(__filename, () => {
       });
     });
 
+    it('Archer should flee for walking axeGuy', () => {
+      let timestamp = new Date().getTime() +100;
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const characterOne = JSON.parse(JSON.stringify(axeGuy));
+      characterOne.position.x = 2;
+      characterOne.position.z = 2;
+      const characterTwo = JSON.parse(JSON.stringify(archer));
+      characterTwo.position.x = 4;
+      characterTwo.position.z = 4;
+      const fleeTransitions = buildTransitionTable([TRIGGERS.fleeOnSight]);
+      engine.addCharacter(characterOne, 'player');
+      engine.addCharacter(characterTwo, 'NPC', fleeTransitions);
+      return new Promise((resolve) => {
+        const testFn = (event) => {
+          if (event.character === characterTwo.id
+            && event.result === 'walk') {
+            //TODO some extra assert about the direction?
+            emitter.removeListener('characterUpdate', testFn);
+            return resolve();
+          }
+          timestamp += 100;
+          engine.tick(timestamp);
+        };
+        emitter.on('characterUpdate', testFn);
+        engine.handlePlayerAction({
+          character: characterOne.id,
+          type: ACTIONS.WALKING,
+          direction: { x: 20, z: 20 },
+        });
+        engine.tick(timestamp);
+      });
+    });
+
+
+
     it('AxeGuy should retaliate archer\'s attack', () => {
       let timestamp = new Date().getTime() +100;
       const emitter = new EventEmitter2();
@@ -270,18 +306,19 @@ describe(__filename, () => {
        const engine = new GameEngine(map, emitter);
        const characterOne = JSON.parse(JSON.stringify(axeGuy));
        const characterTwo = JSON.parse(JSON.stringify(archer));
-       const aggressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE])
+       const aggressiveTransitions = buildTransitionTable([TRIGGERS.attackOnRangeIfIDLE,
+         TRIGGERS.stopAttackingWhenResultIdle]);
        const defensiveTransitions = buildTransitionTable([TRIGGERS.attackWhenAttackedAndIDLE,
          TRIGGERS.attackWhenAttackedAndWalking, TRIGGERS.uneasy, TRIGGERS.idleAfterCollision]);
        engine.addCharacter(characterOne, 'NPC', defensiveTransitions);
        engine.addCharacter(characterTwo, 'NPC', aggressiveTransitions);
        return new Promise((resolve) => {
        const testFn = (event) => {
-         if (event.character === archer.id
+         if (event.character === archer.id && event.aggressor === axeGuy.id
            && (event.result === 'damaged' || event.result === 'block'
          || event.result === 'dodge' || event.result === 'missed')) {
            emitter.removeListener('characterUpdate', testFn);
-           resolve();
+           return resolve();
          }
          timestamp += 100;
          engine.tick(timestamp);

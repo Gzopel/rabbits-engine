@@ -89,7 +89,7 @@ describe(__filename, () => {
         assert(update.character === characterTwo.id, 'Should update character two');
         assert(update.result === 'walk', 'should be walking');
         assert(characterTwo.position.z > archer.position.z, 'Should increase z position');
-        assert(characterTwo.position.x === archer.position.x, 'Should not increase x position');
+        assert(characterTwo.position.x > archer.position.x, 'Should increase x position');
         emitter.removeListener('characterUpdate', testFn);
         done();
       };
@@ -97,52 +97,48 @@ describe(__filename, () => {
       emitter.emit('newState', {
         action: ACTIONS.WALKING,
         owner: characterTwo.id,
-        direction: { x: archer.position.x, z: 40},
+        direction: { x: 40, z: 40},
       });
     });
 
-    it('3. Archer should be able to attack from the distance', (done) => {
-      const testFn = (update) => {
-        assert(update.aggressor === characterTwo.id, 'Character two should be the aggressor');
-        assert(update.character === characterOne.id, 'Should update character one');
-        assert(update.result === 'damaged' || update.result === 'block'
-          || update.result === 'dodge' || update.result === 'missed');
-        if (update.result === 'damaged') {
-          assert(update.damage > 0, 'if damaged there should be damage');
-        }
-        emitter.removeListener('characterUpdate', testFn);
-        done();
-      };
-      emitter.on('characterUpdate', testFn);
-      emitter.emit('newState', {
-        action: ACTIONS.BASIC_ATTACK,
-        owner: characterTwo.id,
-        target: characterOne.id,
+    it('3. Archer should be able to attack from the distance', () => {
+      return new Promise((resolve) => {
+        const testFn = (update) => {
+          assert(update.aggressor === characterTwo.id, 'Character two should be the aggressor');
+          assert(update.character === characterOne.id, 'Should update character one');
+          assert(update.result === 'damaged' || update.result === 'block'
+            || update.result === 'dodge' || update.result === 'missed');
+          if (update.result === 'damaged') {
+            assert(update.damage > 0, 'if damaged there should be damage');
+          }
+          emitter.removeListener('characterUpdate', testFn);
+          resolve();
+        };
+        emitter.on('characterUpdate', testFn);
+        emitter.emit('newState', {
+          action: ACTIONS.BASIC_ATTACK,
+          owner: characterTwo.id,
+          target: characterOne.id,
+        });
       });
     });
-
-
 
     it('4. Axe should try to hit but move instead', (done) => {
-      emitter.emit('newState', { //lets miove the archer further away.
-        action: ACTIONS.WALKING,
-        owner: characterTwo.id,
-        direction: { x: archer.position.x, z: 40},
-      });
       const testFn = (update) => {
         assert(update.character === characterOne.id, 'Should update character one');
-        assert(update.result === 'walk', 'Should be walking');
+        assert(update.action === 'walk', 'Should be walking');
         assert(characterOne.position.z > axeGuy.position.z, 'Should increase z position');
-        assert(characterOne.position.x >= axeGuy.position.x, 'Should not decrease x position');
+        assert(characterOne.position.x > axeGuy.position.x, 'Should increase x position');
         emitter.removeListener('characterUpdate', testFn);
         done();
       };
       emitter.on('characterUpdate', testFn);
+
       emitter.emit('newState', {
         action: ACTIONS.BASIC_ATTACK,
         owner: characterOne.id,
         target: characterTwo.id,
-      });
+      })
     });
   });
 });
