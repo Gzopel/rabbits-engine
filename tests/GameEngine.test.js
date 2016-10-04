@@ -114,6 +114,30 @@ describe(__filename, () => {
       engine.removeCharacter(character.id);
     });
 
+    it('should remove a player after it is dead', (done) => {
+      let timestamp = new Date().getTime();
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const characterOne = JSON.parse(JSON.stringify(axeGuy));
+      const characterTwo = JSON.parse(JSON.stringify(archer));
+      const testFn = (event) => {
+        assert.equal(event.characterId, characterOne.id, 'not the expected id');
+        emitter.removeListener('rmCharacter', testFn);
+        done();
+      };
+      emitter.on('rmCharacter', testFn);
+      engine.addCharacter(characterOne, 'player');
+      engine.addCharacter(characterTwo, 'player');
+      engine.handlePlayerAction({
+        character: characterTwo.id,
+        type: ACTIONS.BASIC_ATTACK,
+        target: characterOne.id,
+      });
+      for (let i = 1; i < 100; i++) {
+        engine.tick(timestamp + 100 * i);
+      }
+    });
+
     it('should be idle after attacking a disconnected player', () => {
       let timestamp = new Date().getTime() +100;
       const emitter = new EventEmitter2();
