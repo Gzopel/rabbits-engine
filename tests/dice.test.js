@@ -14,7 +14,8 @@ describe(__filename, () => {
     assert(result.success <= dices);
     assert(result.fails >= 0);
     assert(result.fails <= dices);
-    assert(result.total === (result.critics + result.success) - result.fails);
+    assert(result.total === (result.critics + result.success) - result.botches);
+    assert(dices === (result.critics + result.success + result.fails + result.botches));
     done();
   });
 })
