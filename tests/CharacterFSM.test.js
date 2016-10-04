@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import { EventEmitter2 } from 'eventemitter2';
 
-import { ACTIONS } from '../lib/rules/rules';
+import { ACTIONS } from '../lib/rules/RuleBook';
 import { CharacterFSM } from '../lib/FSM/CharacterFSM';
 
 describe(__filename, () => {

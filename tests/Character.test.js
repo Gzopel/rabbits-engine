@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import Character from  '../lib/Character';
+import Character from  '../lib/rules/Character';
 
 const axeGuy = require('./testData/archer.json');
 

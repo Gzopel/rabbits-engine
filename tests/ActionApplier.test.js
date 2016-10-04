@@ -1,10 +1,10 @@
 import { assert } from 'chai';
 import { EventEmitter2 } from 'eventemitter2';
 
-import { ACTIONS } from '../lib/rules/rules';
+import { ACTIONS } from '../lib/rules/RuleBook';
 import ActionApplier from '../lib/ActionApplier';
 
-import Character from  '../lib/Character';
+import Character from  '../lib/rules/Character';
 
 const axeGuy = require('./testData/axeGuy.json');
 const archer = require('./testData/archer.json');
