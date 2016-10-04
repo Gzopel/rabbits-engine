@@ -4,14 +4,16 @@ import { EventEmitter2 } from 'eventemitter2';
 import { ACTIONS } from '../lib/rules/rules';
 import ActionApplier from '../lib/ActionApplier';
 
+import Character from  '../lib/Character';
+
 const axeGuy = require('./testData/axeGuy.json');
 const archer = require('./testData/archer.json');
 const map = { size: { x: 400, z: 400 } };
 
 describe(__filename, () => {
   describe('Move collition', () => {
-    const characterOne =JSON.parse(JSON.stringify(axeGuy))
-    const characterTwo = JSON.parse(JSON.stringify(archer));
+    const characterOne = new Character(JSON.parse(JSON.stringify(axeGuy)))
+    const characterTwo = new Character(JSON.parse(JSON.stringify(archer)));
     const characters = new Map([[1, characterOne], [2, characterTwo]]);
     const emitter = new EventEmitter2();
     const applier = new ActionApplier(map, emitter, characters);
@@ -58,8 +60,8 @@ describe(__filename, () => {
   });
 
   describe('Epic fight!', () => {
-    const characterOne = JSON.parse(JSON.stringify(axeGuy))
-    const characterTwo = JSON.parse(JSON.stringify(archer));
+    const characterOne = new Character(JSON.parse(JSON.stringify(axeGuy)))
+    const characterTwo = new Character(JSON.parse(JSON.stringify(archer)));
     const characters = new Map([[1, characterOne], [2, characterTwo]]);
     const emitter = new EventEmitter2();
     const applier = new ActionApplier(map, emitter, characters);

@@ -1,15 +1,6 @@
 {
   "id":1,
   "position": { "x": 1, "z": 1 },
-  "health": 7,
-  "items": {
-    "weapon": {
-      "range": 3,
-      "type": "AXE",
-      "damage": 4,
-      "difficulty": 6
-    }
-  },
   "sheet": {
     "attributes": {
       "physical": {
@@ -26,6 +17,14 @@
         "melee": 5
       }
     },
-    "maxHealth": 7
+    "maxHealth": 7,
+    "items": {
+      "weapon": {
+        "range": 3,
+        "type": "AXE",
+        "damage": 4,
+        "difficulty": 6
+      }
+    }
   }
 }

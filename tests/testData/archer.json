@@ -1,15 +1,6 @@
 {
   "id": 2,
   "position": { "x": 2, "z": 2 },
-  "health": 7,
-  "items": {
-    "weapon": {
-      "range": 20,
-      "type":"BOW",
-      "damage": 6,
-      "difficulty": 7
-    }
-  },
   "sheet": {
     "attributes": {
       "physical": {
@@ -30,6 +21,14 @@
         "archery": 5
       }
     },
-    "maxHealth": 7
+    "maxHealth": 7,
+    "items": {
+      "weapon": {
+        "range": 20,
+        "type":"BOW",
+        "damage": 6,
+        "difficulty": 7
+      }
+    }
   }
 }
