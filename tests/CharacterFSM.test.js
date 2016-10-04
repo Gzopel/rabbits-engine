@@ -24,7 +24,7 @@ describe(__filename, () => {
       emitter.emit('not_done', { type: 'not_done' });
       const updated = cFSM.tick(new Date().getTime() + 10);
       assert.isNotOk(updated, 'should have updated');
-      assert(cFSM.state.action === ACTIONS.IDLE, 'should stay idle')
+      assert(cFSM.state.action === ACTIONS.IDLE, 'should stay idle');
     });
 
     it('should transition and fire an event', () => {
@@ -50,7 +50,7 @@ describe(__filename, () => {
                 ...fsm.state,
                 id: fsm.state.id + 1,
               };
-            }
+            },
           };
         }]
       },
