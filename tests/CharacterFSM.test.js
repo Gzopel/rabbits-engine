@@ -52,7 +52,7 @@ describe(__filename, () => {
               };
             },
           };
-        }]
+        }],
       },
     };
     const emitter = new EventEmitter2();
