@@ -19,11 +19,13 @@ describe(__filename, () => {
     const applier = new ActionApplier(map, emitter, characters);
 
     it('should collide instantly if next to each other', (done) => {
+      characterOne.position = { x: 1, z: 1 };
+      characterTwo.position = { x: 2, z: 2 };
       const testFn = (update) => {
         assert(update.character === characterTwo.id, 'Should update character two');
         assert(update.result === 'collision', 'Should collide');
-        assert(characterTwo.position.z === archer.position.z, 'Should not increase z position');
-        assert(characterTwo.position.x === archer.position.x, 'Should not increase x position');
+        assert(characterTwo.position.z === 2, 'Should not increase z position');
+        assert(characterTwo.position.x === 2, 'Should not increase x position');
         emitter.removeListener('characterUpdate', testFn);
         done();
       };
@@ -36,10 +38,8 @@ describe(__filename, () => {
     });
 
     it('should collide after updating position if there is a gap', (done) => {
-      characterOne.position.x = 2;
-      characterOne.position.z = 2;
-      characterTwo.position.x = 5;
-      characterTwo.position.z = 5;
+      characterOne.position = { x: 2, z: 2 };
+      characterTwo.position = { x: 5, z: 5 };
       const testFn = (update) => {
         assert(update.character === characterTwo.id, 'Should update character two');
         assert(update.result === 'collision', 'Should collide');
@@ -65,13 +65,15 @@ describe(__filename, () => {
     const characters = new Map([[1, characterOne], [2, characterTwo]]);
     const emitter = new EventEmitter2();
     const applier = new ActionApplier(map, emitter, characters);
+    characterOne.position = { x: 1, z: 1 };
+    characterTwo.position = { x: 2, z: 2 };
 
     it('1. Axe should hit', (done) => {
       const testFn = (update) => {
         assert(update.aggressor === characterOne.id, 'Character one should be the aggressor');
         assert(update.character === characterTwo.id, 'Should update character two');
         assert(update.result === 'damaged' || update.result === 'block'
-          || update.result === 'dodge'|| update.result === 'missed');
+          || update.result === 'dodge' || update.result === 'missed');
         if (update.result === 'damaged') {
           assert(update.damage > 0, 'if damaged there should be damage');
         }
@@ -90,8 +92,8 @@ describe(__filename, () => {
       const testFn = (update) => {
         assert(update.character === characterTwo.id, 'Should update character two');
         assert(update.result === 'walk', 'should be walking');
-        assert(characterTwo.position.z > archer.position.z, 'Should increase z position');
-        assert(characterTwo.position.x > archer.position.x, 'Should increase x position');
+        assert(characterTwo.position.z > 2, 'Should increase z position');
+        assert(characterTwo.position.x > 2, 'Should increase x position');
         emitter.removeListener('characterUpdate', testFn);
         done();
       };
@@ -129,8 +131,8 @@ describe(__filename, () => {
       const testFn = (update) => {
         assert(update.character === characterOne.id, 'Should update character one');
         assert(update.action === 'walk', 'Should be walking');
-        assert(characterOne.position.z > axeGuy.position.z, 'Should increase z position');
-        assert(characterOne.position.x > axeGuy.position.x, 'Should increase x position');
+        assert(characterOne.position.z > 1, 'Should increase z position');
+        assert(characterOne.position.x > 1, 'Should increase x position');
         emitter.removeListener('characterUpdate', testFn);
         done();
       };

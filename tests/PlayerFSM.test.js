@@ -40,9 +40,11 @@ describe(__filename, () => {
     const emitter = new EventEmitter2();
 
     it('should keep walking until it reaches the target', (done) => {
-      const timestamp = new Date().getTime();
-      const character = { position:{ x: 0, z: 0 } };
+      const timestamp = new Date
+      ().getTime();
+      const character = { id: 1, position: { x: 0, z: 0 } };
       const cFSM = new PlayerFSM(emitter, character, transitions);
+      cFSM.setState(buildState(ACTIONS.IDLE),timestamp);
       emitter.emit('start', { type: 'start' });
       cFSM.tick(timestamp + 100);
       assert(cFSM.state.action === ACTIONS.WALKING, 'should change state');
@@ -62,6 +64,7 @@ describe(__filename, () => {
       const timestamp = new Date().getTime();
       const character = { id: 1, position: { x: 0, z: 0 } };
       const cFSM = new PlayerFSM(emitter, character, transitions);
+      cFSM.setState(buildState(ACTIONS.IDLE),timestamp);
       emitter.emit('start', { type: 'start' });
       cFSM.tick(timestamp + 100);
       assert(cFSM.state.action === ACTIONS.WALKING, 'should change state');
