@@ -8,3 +8,8 @@ To run the test just:
 npm i
 npm test
 ```
+
+You can install it by:
+```
+npm install --save rabbits-engine
+```
