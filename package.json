@@ -1,12 +1,12 @@
 {
   "name": "rabbits-engine",
-  "version": "0.0.1",
+  "version": "0.0.1-alpha",
   "description": "Game logic for rabbits3d.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Gzopel/rabbits-engine.git"
   },
-  "author": "jepunto@gmail.com",
+  "author": "Gabriel Lopez jepunto@gmail.com",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Gzopel/rabbits-engine/issues"
@@ -18,14 +18,6 @@
     "test-cover": "node_modules/.bin/babel-node  node_modules/istanbul/lib/cli cover --report html node_modules/.bin/_mocha --  tests/ --sort --compilers js:babel-core/register"
   },
   "devDependencies": {
-    "babel-cli": "6.14.0",
-    "babel-core": "6.14.0",
-    "babel-eslint": "6.1.2",
-    "babel-loader": "6.2.5",
-    "babel-preset-es2015": "6.14.0",
-    "babel-preset-react": "6.11.1",
-    "babel-preset-stage-0": "6.5.0",
-    "babel-register": "6.14.0",
     "chai": "3.5.0",
     "eslint": "3.6.1",
     "eslint-config-airbnb": "12.0.0",
@@ -34,6 +26,14 @@
     "mocha": "3.0.2"
   },
   "dependencies": {
+    "babel-cli": "6.14.0",
+    "babel-core": "6.14.0",
+    "babel-eslint": "6.1.2",
+    "babel-loader": "6.2.5",
+    "babel-preset-es2015": "6.14.0",
+    "babel-preset-react": "6.11.1",
+    "babel-preset-stage-0": "6.5.0",
+    "babel-register": "6.14.0",
     "eventemitter2": "2.1.3",
     "uuid": "2.0.3"
   }
