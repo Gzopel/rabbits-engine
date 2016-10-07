@@ -1,6 +1,6 @@
 {
   "name": "rabbits-engine",
-  "version": "0.0.1-alpha",
+  "version": "0.0.1-alpha.2",
   "description": "Game logic for rabbits3d.",
   "repository": {
     "type": "git",

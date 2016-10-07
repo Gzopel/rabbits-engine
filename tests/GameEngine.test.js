@@ -7,7 +7,11 @@ import { buildTransitionTable, TRANSITIONS }from '../lib/FSM/transitions';
 
 const axeGuy = require('./testData/axeGuy.json');
 const archer = require('./testData/archer.json');
-const map = { size: { x: 400, z: 400 }, spawnLocations: [{ x: 10, z: 10, r: 10 }] };
+const map = {
+  size: { x: 400, z: 400 },
+  spawnLocations: [{ position: { x: 10, z: 10 }, radius: 10 }],
+  exits: [{ position: { x: 40, z: 0 }, radius: 10, destination: 1}],
+};
 
 describe(__filename, () => {
   describe('Basic player usage', () => {
@@ -128,7 +132,7 @@ describe(__filename, () => {
     });
 
     it('should remove a player after it is dead', (done) => {
-      let timestamp = new Date().getTime()+100;
+      let timestamp = new Date().getTime() + 100;
       const emitter = new EventEmitter2();
       const engine = new GameEngine(map, emitter);
       const characterOne = JSON.parse(JSON.stringify(axeGuy));
@@ -152,8 +156,48 @@ describe(__filename, () => {
       }
     });
 
+    it('should remove a player after it warps on an exit', (done) => {
+      let timestamp = new Date().getTime() + 100;
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const character = JSON.parse(JSON.stringify(axeGuy));
+      const removePromise = new Promise((resolve) => {
+        const onRemove = (event) => {
+          assert.equal(event.characterId, character.id, 'not the expected id');
+          emitter.removeListener('rmCharacter', onRemove);
+          resolve();
+        };
+        emitter.on('rmCharacter', onRemove);
+      });
+      const warpPromise = new Promise((resolve) => {
+        const onWarp = (event) => {
+          assert.equal(event.character, character.id, 'not the expected id');
+          if (event.result === 'warp') {
+            assert.equal(event.action, 'walk', 'should be a walk action');
+            assert(event.destination, 'should have a destination');
+            emitter.removeListener('characterUpdate', onWarp);
+            resolve();
+          }
+        };
+        emitter.on('characterUpdate', onWarp);
+      });
+      engine.addCharacter(character, 'player');
+      engine.tick(timestamp);
+      engine.handlePlayerAction({
+        character: character.id,
+        type: ACTIONS.WALKING,
+        direction: { x: 40, z: 0 },
+      });
+
+      Promise.all([removePromise, warpPromise]).then(() => done());
+
+      for (let i = 2; i < 100; i++) {
+        engine.tick(timestamp + 100 * i);
+      }
+    });
+
     it('should be idle after attacking a disconnected player', () => {
-      let timestamp = new Date().getTime() +100;
+      let timestamp = new Date().getTime() + 100;
       const emitter = new EventEmitter2();
       const engine = new GameEngine(map, emitter);
       const characterOne = JSON.parse(JSON.stringify(axeGuy));
