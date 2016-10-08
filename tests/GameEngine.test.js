@@ -225,6 +225,22 @@ describe(__filename, () => {
         engine.tick(timestamp);
       });
     });
+
+    it('should provide snapshots of the game', () => {
+      let timestamp = new Date().getTime() +100;
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const characterOne = JSON.parse(JSON.stringify(axeGuy));
+      const characterTwo = JSON.parse(JSON.stringify(archer));
+      engine.addCharacter(characterOne, 'player');
+      engine.addCharacter(characterTwo, 'NPC');
+      engine.tick(timestamp);
+      engine.characters.get(characterOne.id).position = { x: 4, z: 4 };
+      engine.characters.get(characterTwo.id).position = { x: 2, z: 2 };
+      
+      const snapshot = engine.getSnapshot();
+      assert(snapshot, 'Should provide a snapshot');
+    });
   });
 
   describe('NPC transitions integration', () => {
