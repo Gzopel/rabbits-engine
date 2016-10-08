@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import { EventEmitter2 } from 'eventemitter2';
 
 import { ACTIONS } from '../lib/rules/BaseRuleBook';
+import RuleBook from '../lib/rules/RuleBook';
 import ActionApplier from '../lib/ActionApplier';
 
 import Character from  '../lib/rules/Character';
@@ -16,7 +17,7 @@ describe(__filename, () => {
     const characterTwo = new Character(JSON.parse(JSON.stringify(archer)));
     const characters = new Map([[1, characterOne], [2, characterTwo]]);
     const emitter = new EventEmitter2();
-    const applier = new ActionApplier(map, emitter, characters);
+    const applier = new ActionApplier(map, emitter, RuleBook, characters);
 
     it('should collide instantly if next to each other', (done) => {
       characterOne.position = { x: 1, z: 1 };
@@ -64,7 +65,7 @@ describe(__filename, () => {
     const characterTwo = new Character(JSON.parse(JSON.stringify(archer)));
     const characters = new Map([[1, characterOne], [2, characterTwo]]);
     const emitter = new EventEmitter2();
-    const applier = new ActionApplier(map, emitter, characters);
+    const applier = new ActionApplier(map, emitter, RuleBook, characters);
     characterOne.position = { x: 1, z: 1 };
     characterTwo.position = { x: 2, z: 2 };
 

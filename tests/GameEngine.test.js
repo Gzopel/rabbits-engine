@@ -2,7 +2,7 @@ import { assert } from 'chai';
 import { EventEmitter2 } from 'eventemitter2';
 
 import { ACTIONS } from '../lib/rules/BaseRuleBook';
-import GameEngine from '../lib/GameEngine';
+import GameEngine from '../lib/ServerGameEngine';
 import { buildTransitionTable, TRANSITIONS }from '../lib/FSM/transitions';
 
 const axeGuy = require('./testData/axeGuy.json');

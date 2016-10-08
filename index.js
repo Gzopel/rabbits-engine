@@ -1,4 +1,4 @@
-import GameEngine from './lib/GameEngine';
+import GameEngine from './lib/ServerGameEngine';
 
 export {
   GameEngine
