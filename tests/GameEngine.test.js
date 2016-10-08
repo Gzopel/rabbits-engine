@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import { EventEmitter2 } from 'eventemitter2';
 
-import { ACTIONS } from '../lib/rules/RuleBook';
+import { ACTIONS } from '../lib/rules/BaseRuleBook';
 import GameEngine from '../lib/GameEngine';
 import { buildTransitionTable, TRANSITIONS }from '../lib/FSM/transitions';
 
