@@ -14,7 +14,7 @@
   "homepage": "https://github.com/Gzopel/rabbits-engine#readme",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/mocha --sort --compilers js:babel-core/register tests/",
+    "test": "node_modules/.bin/_mocha --sort --compilers js:babel-core/register tests/",
     "test-cover": "node_modules/.bin/babel-node  node_modules/istanbul/lib/cli cover --report html node_modules/.bin/_mocha --  tests/ --sort --compilers js:babel-core/register"
   },
   "devDependencies": {

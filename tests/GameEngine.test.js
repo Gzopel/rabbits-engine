@@ -226,20 +226,50 @@ describe(__filename, () => {
       });
     });
 
-    it('should provide snapshots of the game', () => {
+    it('should provide snapshots of the game', (done) => {
       let timestamp = new Date().getTime() +100;
       const emitter = new EventEmitter2();
       const engine = new GameEngine(map, emitter);
       const characterOne = JSON.parse(JSON.stringify(axeGuy));
       const characterTwo = JSON.parse(JSON.stringify(archer));
+      const positionOne = { x: 4, z: 4 };
+      const positionTwo = { x: 2, z: 2 };
       engine.addCharacter(characterOne, 'player');
       engine.addCharacter(characterTwo, 'NPC');
-      engine.tick(timestamp);
-      engine.characters.get(characterOne.id).position = { x: 4, z: 4 };
-      engine.characters.get(characterTwo.id).position = { x: 2, z: 2 };
-      
       const snapshot = engine.getSnapshot();
+
       assert(snapshot, 'Should provide a snapshot');
+      assert(snapshot.map, 'Should contain a map snapshot');
+      assert.deepEqual(snapshot.map,map, 'Should match the map data');
+      assert(snapshot.characters, 'Should contain a characters snapshot');
+
+      const snapCharOne = snapshot.characters[characterOne.id];
+      const snapCharTwo = snapshot.characters[characterTwo.id];
+      assert(snapCharOne, 'Should contain character one');
+      assert(snapCharTwo, 'Should contain character two');
+      assert.deepEqual(snapCharOne.sheet, characterOne.sheet, 'Should have the same sheet');
+      assert.deepEqual(snapCharTwo.sheet, characterTwo.sheet, 'Should have the same sheet');
+      assert(snapCharOne.state, 'Should contain a state for character one');
+      assert(snapCharTwo.state, 'Should contain a state for character two');
+      assert.equal(snapCharOne.state.action, ACTIONS.SPAWN, 'Should be in spawn state');
+      assert.equal(snapCharTwo.state.action, ACTIONS.IDLE, 'Should be in spawn state');
+
+      engine.tick(timestamp);
+      setTimeout(() => {
+        engine.tick(timestamp + 100);
+        engine.characters.get(characterOne.id).position = positionOne;
+        engine.characters.get(characterTwo.id).position = positionTwo;
+        const snapshotTwo = engine.getSnapshot();
+
+        const snapTwoCharTwo = snapshotTwo.characters[characterTwo.id];
+        const snapTwoCharOne = snapshotTwo.characters[characterOne.id];
+        assert.equal(snapTwoCharOne.state.action, ACTIONS.IDLE, 'Should be in idle state');
+        assert.equal(snapTwoCharTwo.state.action, ACTIONS.IDLE, 'Should be in idle state');
+        assert.deepEqual(snapTwoCharOne.position, positionOne, 'Should have the same position');
+        assert.deepEqual(snapTwoCharTwo.position, positionTwo, 'Should have the same position');
+        done();
+      },100);
+
     });
   });
 
