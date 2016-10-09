@@ -1,9 +1,9 @@
 import { assert } from 'chai';
 import { EventEmitter2 } from 'eventemitter2';
 
-import { ACTIONS } from '../lib/rules/RuleBook';
-import GameEngine from '../lib/GameEngine';
-import { buildTransitionTable, TRANSITIONS }from '../lib/FSM/transitions';
+import { ACTIONS } from '../lib/rules/BaseRuleBook';
+import GameEngine from '../lib/ServerGameEngine';
+import { TRANSITIONS }from '../lib/FSM/transitions';
 
 const axeGuy = require('./testData/axeGuy.json');
 const archer = require('./testData/archer.json');
@@ -202,7 +202,7 @@ describe(__filename, () => {
       const engine = new GameEngine(map, emitter);
       const characterOne = JSON.parse(JSON.stringify(axeGuy));
       const characterTwo = JSON.parse(JSON.stringify(archer));
-      engine.addCharacter(characterOne, 'player',buildTransitionTable('stopAttackingWhenResultIdle'));
+      engine.addCharacter(characterOne, 'player',[TRANSITIONS.stopAttackingWhenResultIdle]);
       engine.addCharacter(characterTwo, 'player');
       return new Promise((resolve) => {
         const testFn = (event) => {
@@ -225,6 +225,131 @@ describe(__filename, () => {
         engine.tick(timestamp);
       });
     });
+
+    it('should provide snapshots of the game', (done) => {
+      let timestamp = new Date().getTime() +100;
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const characterOne = JSON.parse(JSON.stringify(axeGuy));
+      const characterTwo = JSON.parse(JSON.stringify(archer));
+      const positionOne = { x: 4, z: 4 };
+      const positionTwo = { x: 2, z: 2 };
+      engine.addCharacter(characterOne, 'player');
+      engine.addCharacter(characterTwo, 'NPC');
+      const snapshot = engine.getSnapshot();
+
+      assert(snapshot, 'Should provide a snapshot');
+      assert(snapshot.map, 'Should contain a map snapshot');
+      assert.deepEqual(snapshot.map,map, 'Should match the map data');
+      assert(snapshot.characters, 'Should contain a characters snapshot');
+
+      const snapCharOne = snapshot.characters[characterOne.id];
+      const snapCharTwo = snapshot.characters[characterTwo.id];
+      assert(snapCharOne, 'Should contain character one');
+      assert(snapCharTwo, 'Should contain character two');
+      assert.deepEqual(snapCharOne.sheet, characterOne.sheet, 'Should have the same sheet');
+      assert.deepEqual(snapCharTwo.sheet, characterTwo.sheet, 'Should have the same sheet');
+      assert(snapCharOne.state, 'Should contain a state for character one');
+      assert(snapCharTwo.state, 'Should contain a state for character two');
+      assert.equal(snapCharOne.state.action, ACTIONS.SPAWN, 'Should be in spawn state');
+      assert.equal(snapCharTwo.state.action, ACTIONS.IDLE, 'Should be in spawn state');
+
+      engine.tick(timestamp);
+      setTimeout(() => {
+        engine.tick(timestamp + 100);
+        engine.characters.get(characterOne.id).position = positionOne;
+        engine.characters.get(characterTwo.id).position = positionTwo;
+        const snapshotTwo = engine.getSnapshot();
+
+        const snapTwoCharTwo = snapshotTwo.characters[characterTwo.id];
+        const snapTwoCharOne = snapshotTwo.characters[characterOne.id];
+        assert.equal(snapTwoCharOne.state.action, ACTIONS.IDLE, 'Should be in idle state');
+        assert.equal(snapTwoCharTwo.state.action, ACTIONS.IDLE, 'Should be in idle state');
+        assert.deepEqual(snapTwoCharOne.position, positionOne, 'Should have the same position');
+        assert.deepEqual(snapTwoCharTwo.position, positionTwo, 'Should have the same position');
+        done();
+      },100);
+    });
+  });
+
+  describe('Shoot action', () => {
+    it('should be removed after hitting a border', (done) => {
+      let timestamp = new Date().getTime() + 100;
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const characterOne = JSON.parse(JSON.stringify(archer));
+      engine.addCharacter(characterOne, 'player');
+      const shootPromise = new Promise((resolve) => {
+        const testFn = (event) => {
+          if (event.character === characterOne.id
+            && event.result === 'shoot') {
+            emitter.removeListener('characterUpdate', testFn);
+            return resolve();
+          }
+        };
+        emitter.on('characterUpdate', testFn);
+      });
+      const collisionPromise = new Promise((resolve) => {
+        const testFn = (event) => {
+          if (event.result === 'collision') {
+            emitter.removeListener('characterUpdate', testFn);
+            return resolve();
+          }
+        };
+        emitter.on('characterUpdate', testFn);
+      });
+      Promise.all([shootPromise, collisionPromise]).then(() => done());
+      engine.tick(timestamp);
+      engine.handlePlayerAction({
+        character: characterOne.id,
+        type: ACTIONS.SHOOT,
+      });
+      setInterval(()=>{
+        engine.tick(timestamp + 100*(new Date().getTime()-timestamp));
+      },10);
+    });
+  });
+
+  it('should be removed after hitting a border', (done) => {
+    let timestamp = new Date().getTime() + 100;
+    const emitter = new EventEmitter2();
+    const engine = new GameEngine(map, emitter);
+    const characterOne = JSON.parse(JSON.stringify(archer));
+    const characterTwo = JSON.parse(JSON.stringify(axeGuy));
+    engine.addCharacter(characterOne, 'player');
+    engine.addCharacter(characterTwo, 'player');
+    const collisionPromise = new Promise((resolve) => {
+      const testFn = (event) => {
+        if (event.result === 'collision') {
+          assert(event.collidedWith === characterTwo.id,'should collide with character two');
+          emitter.removeListener('characterUpdate', testFn);
+          return resolve();
+        }
+      };
+      emitter.on('characterUpdate', testFn);
+    });
+    const attackPromise = new Promise((resolve) => {
+      const testFn = (event) => {
+        if (event.action === 'basicAttack') {
+          assert(event.character === characterTwo.id,'should attack character two');
+          emitter.removeListener('characterUpdate', testFn);
+          return resolve();
+        }
+      };
+      emitter.on('characterUpdate', testFn);
+    });
+    Promise.all([attackPromise, collisionPromise]).then(() => done());
+    engine.tick(timestamp);
+    engine.characters.get(characterOne.id).position = { x: 10, z:100};
+    engine.characters.get(characterOne.id).orientation = { x: 0, z:-1};
+    engine.characters.get(characterTwo.id).position = { x: 10, z:10};
+    engine.handlePlayerAction({
+      character: characterOne.id,
+      type: ACTIONS.SHOOT,
+    });
+    setInterval(()=>{
+      engine.tick(timestamp + 100*(new Date().getTime()-timestamp));
+    },10);
   });
 
   describe('NPC transitions integration', () => {
@@ -234,7 +359,7 @@ describe(__filename, () => {
       const engine = new GameEngine(map, emitter);
       const characterOne = JSON.parse(JSON.stringify(axeGuy));
       const characterTwo = JSON.parse(JSON.stringify(archer));
-      const aggressiveTransitions = buildTransitionTable([TRANSITIONS.attackOnRangeIfIDLE]);
+      const aggressiveTransitions = [TRANSITIONS.attackOnRangeIfIDLE];
       engine.addCharacter(characterOne, 'player');
       engine.addCharacter(characterTwo, 'NPC', aggressiveTransitions);
       engine.tick(timestamp);
@@ -267,7 +392,7 @@ describe(__filename, () => {
       const engine = new GameEngine(map, emitter);
       const characterOne = JSON.parse(JSON.stringify(axeGuy));
       const characterTwo = JSON.parse(JSON.stringify(archer));
-      const fleeTransitions = buildTransitionTable([TRANSITIONS.fleeOnSight]);
+      const fleeTransitions = [TRANSITIONS.fleeOnSight];
       engine.addCharacter(characterOne, 'player');
       engine.addCharacter(characterTwo, 'NPC', fleeTransitions);
       return new Promise((resolve) => {
@@ -301,8 +426,8 @@ describe(__filename, () => {
       const engine = new GameEngine(map, emitter);
       const characterOne = JSON.parse(JSON.stringify(axeGuy));
       const characterTwo = JSON.parse(JSON.stringify(archer));
-      const defensiveTransitions = buildTransitionTable([TRANSITIONS.attackWhenAttackedAndIDLE,
-        TRANSITIONS.attackWhenAttackedAndWalking]);
+      const defensiveTransitions = [TRANSITIONS.attackWhenAttackedAndIDLE,
+        TRANSITIONS.attackWhenAttackedAndWalking];
       engine.addCharacter(characterOne, 'NPC', defensiveTransitions);
       engine.addCharacter(characterTwo, 'player');
       engine.tick(timestamp);
@@ -335,7 +460,7 @@ describe(__filename, () => {
       const engine = new GameEngine(map, emitter);
       const characterOne = JSON.parse(JSON.stringify(axeGuy));
       characterOne.position = { x: 4, z: 4 };
-      const uneasy = buildTransitionTable([TRANSITIONS.uneasy]);
+      const uneasy = [TRANSITIONS.uneasy];
       engine.addCharacter(characterOne, 'NPC', uneasy);
       return new Promise((resolve) => {
         const testFn = (event) => {
@@ -361,11 +486,11 @@ describe(__filename, () => {
        const characterTwo = JSON.parse(JSON.stringify(archer));
        characterOne.position = { x: 4, z: 4 };
        characterTwo.position = { x: 2, z: 2 };
-       const aggressiveTransitions = buildTransitionTable([TRANSITIONS.attackOnRangeIfIDLE,
-         TRANSITIONS.stopAttackingWhenResultIdle]);
-       const defensiveTransitions = buildTransitionTable([TRANSITIONS.attackWhenAttackedAndIDLE,
+       const aggressiveTransitions = [TRANSITIONS.attackOnRangeIfIDLE,
+         TRANSITIONS.stopAttackingWhenResultIdle];
+       const defensiveTransitions = [TRANSITIONS.attackWhenAttackedAndIDLE,
          TRANSITIONS.attackWhenAttackedAndWalking, TRANSITIONS.uneasy, TRANSITIONS.idleAfterCollision,
-         TRANSITIONS.resumeAttackAfterCollision]);
+         TRANSITIONS.resumeAttackAfterCollision];
        engine.addCharacter(characterOne, 'NPC', defensiveTransitions);
        engine.addCharacter(characterTwo, 'NPC', aggressiveTransitions);
        return new Promise((resolve) => {

@@ -1,7 +1,8 @@
 import { assert } from 'chai';
 import { EventEmitter2 } from 'eventemitter2';
 
-import { ACTIONS } from '../lib/rules/RuleBook';
+import { ACTIONS } from '../lib/rules/BaseRuleBook';
+import RuleBook from '../lib/rules/RuleBook';
 import ActionApplier from '../lib/ActionApplier';
 
 import Character from  '../lib/rules/Character';
@@ -11,12 +12,12 @@ const archer = require('./testData/archer.json');
 const map = { size: { x: 400, z: 400 } };
 
 describe(__filename, () => {
-  describe('Move collition', () => {
+  describe('Move', () => {
     const characterOne = new Character(JSON.parse(JSON.stringify(axeGuy)))
     const characterTwo = new Character(JSON.parse(JSON.stringify(archer)));
     const characters = new Map([[1, characterOne], [2, characterTwo]]);
     const emitter = new EventEmitter2();
-    const applier = new ActionApplier(map, emitter, characters);
+    const applier = new ActionApplier(map, emitter, RuleBook, characters);
 
     it('should collide instantly if next to each other', (done) => {
       characterOne.position = { x: 1, z: 1 };
@@ -24,6 +25,7 @@ describe(__filename, () => {
       const testFn = (update) => {
         assert(update.character === characterTwo.id, 'Should update character two');
         assert(update.result === 'collision', 'Should collide');
+        assert(update.collidedWith === characterOne.id, 'Should collide with player one');
         assert(characterTwo.position.z === 2, 'Should not increase z position');
         assert(characterTwo.position.x === 2, 'Should not increase x position');
         emitter.removeListener('characterUpdate', testFn);
@@ -43,6 +45,7 @@ describe(__filename, () => {
       const testFn = (update) => {
         assert(update.character === characterTwo.id, 'Should update character two');
         assert(update.result === 'collision', 'Should collide');
+        assert(update.collidedWith === characterOne.id, 'Should collide with player one');
         assert(characterTwo.position.z < 5, 'Should increase z position');
         assert(characterTwo.position.z > 2, 'but not that much');
         assert(characterTwo.position.x < 5, 'Should increase x position');
@@ -57,14 +60,34 @@ describe(__filename, () => {
         direction: { x: 0, z: 0},
       });
     });
+
+
+    it('if no direction should move using orientation', (done) => {
+      characterOne.position = { x: 5, z: 5 };
+      characterOne.orientation = { x: 1, z: 0 };
+      const testFn = (update) => {
+        assert(update.character === characterOne.id, 'Should update character two');
+        assert(update.result === 'walk', 'Should walk');
+        assert(characterOne.position.x > 5, 'Should increase x position');
+        emitter.removeListener('characterUpdate', testFn);
+        done();
+      };
+      emitter.on('characterUpdate', testFn);
+      emitter.emit('newState', {
+        action: ACTIONS.WALKING,
+        owner: characterOne.id,
+      });
+    });
+
   });
+
 
   describe('Epic fight!', () => {
     const characterOne = new Character(JSON.parse(JSON.stringify(axeGuy)))
     const characterTwo = new Character(JSON.parse(JSON.stringify(archer)));
     const characters = new Map([[1, characterOne], [2, characterTwo]]);
     const emitter = new EventEmitter2();
-    const applier = new ActionApplier(map, emitter, characters);
+    const applier = new ActionApplier(map, emitter, RuleBook, characters);
     characterOne.position = { x: 1, z: 1 };
     characterTwo.position = { x: 2, z: 2 };
 
