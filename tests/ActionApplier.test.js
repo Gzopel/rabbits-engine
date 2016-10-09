@@ -79,6 +79,24 @@ describe(__filename, () => {
       });
     });
 
+    it('if action has orientation it should override characters', (done) => {
+      characterOne.position = { x: 5, z: 5 };
+      characterOne.orientation = { x: 1, z: 0 };
+      const testFn = (update) => {
+        assert(update.character === characterOne.id, 'Should update character two');
+        assert(update.action === 'walk', 'Should walk');
+        assert(characterOne.position.x < 5, 'Should decrease x position');
+        emitter.removeListener('characterUpdate', testFn);
+        done();
+      };
+      emitter.on('characterUpdate', testFn);
+      emitter.emit('newState', {
+        action: ACTIONS.WALKING,
+        owner: characterOne.id,
+        orientation : { x: -1, z: 0 }
+      });
+    });
+
   });
 
 
