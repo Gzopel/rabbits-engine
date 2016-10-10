@@ -1,7 +1,9 @@
-import GameEngine from './lib/ServerGameEngine';
+import ServerGameEngine from './lib/ServerGameEngine';
+import ClientGameEngine from './lib/ClientGameEngine';
 
 export {
-  GameEngine
+  ServerGameEngine,
+  ClientGameEngine,
 }
 
-export default GameEngine;
+export default ServerGameEngine;

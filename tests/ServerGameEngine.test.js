@@ -310,7 +310,7 @@ describe(__filename, () => {
     });
   });
 
-  it('should be removed after hitting a border', (done) => {
+  it('should attack after colliding with a character', (done) => {
     let timestamp = new Date().getTime() + 100;
     const emitter = new EventEmitter2();
     const engine = new GameEngine(map, emitter);
