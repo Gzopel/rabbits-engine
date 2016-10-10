@@ -408,11 +408,11 @@ describe(__filename, () => {
         };
         engine.tick(timestamp);
         engine.characters.get(characterOne.id).position = { x: 5, z: 5 };
-        engine.characters.get(characterTwo.id).position = { x: 10, z: 10};
+        engine.characters.get(characterTwo.id).position = { x: 30, z: 30};
         engine.handlePlayerAction({
           character: characterOne.id,
           type: ACTIONS.WALKING,
-          direction: { x: 20, z: 20 },
+          direction: { x: 50, z: 50 },
         });
         emitter.on('characterUpdate', testFn);
         timestamp += 100;

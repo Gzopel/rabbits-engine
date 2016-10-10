@@ -1,0 +1,94 @@
+
+> rabbits-engine@0.0.1-alpha.6 test /home/glopez/playground/rabbits-engine
+> _mocha --sort --compilers js:babel-core/register tests/
+
+
+
+  /home/glopez/playground/rabbits-engine/tests/ServerGameEngine.test.js
+    NPC transitions integration
+character { x: 5, z: 5 } { x: 7.82842712474619, z: 7.82842712474619 } 3.9999999999999996
+distance 28.284271247461902
+character { x: 5, z: 5 } { x: 7.82842712474619, z: 7.82842712474619 } 3.9999999999999996
+distance 0
+other to next 31.355339059327374
+{ character: 1,
+  orientation: { x: 0.8944271909999159, z: 0.4472135954999579 },
+  position: { x: 4, z: 2 },
+  result: 'spawn',
+  action: 'spawn',
+  type: 'characterUpdate',
+  timestamp: 1476133487868 }
+character { x: 7.82842712474619, z: 7.82842712474619 } { x: 10.65685424949238, z: 10.65685424949238 } 3.9999999999999996
+distance 28.284271247461902
+character { x: 7.82842712474619, z: 7.82842712474619 } { x: 10.65685424949238, z: 10.65685424949238 } 3.9999999999999996
+distance 0
+other to next 27.355339059327378
+{ action: 'walk',
+  character: 1,
+  orientation: { x: 0.7071067811865476, z: 0.7071067811865476 },
+  result: 'walk',
+  position: { x: 7.82842712474619, z: 7.82842712474619 },
+  duration: 100,
+  type: 'characterUpdate',
+  timestamp: 1476133487968 }
+character { x: 10.65685424949238, z: 10.65685424949238 } { x: 13.48528137423857, z: 13.48528137423857 } 3.9999999999999996
+distance 28.284271247461902
+character { x: 10.65685424949238, z: 10.65685424949238 } { x: 13.48528137423857, z: 13.48528137423857 } 3.9999999999999996
+distance 0
+other to next 23.35533905932738
+{ action: 'walk',
+  character: 1,
+  orientation: { x: 0.7071067811865476, z: 0.7071067811865476 },
+  result: 'walk',
+  position: { x: 10.65685424949238, z: 10.65685424949238 },
+  duration: 100,
+  type: 'characterUpdate',
+  timestamp: 1476133488068 }
+character { x: 13.48528137423857, z: 13.48528137423857 } { x: 16.31370849898476, z: 16.31370849898476 } 3.9999999999999996
+distance 28.284271247461902
+character { x: 13.48528137423857, z: 13.48528137423857 } { x: 16.31370849898476, z: 16.31370849898476 } 3.9999999999999996
+distance 0
+other to next 19.355339059327378
+{ action: 'walk',
+  character: 1,
+  orientation: { x: 0.7071067811865476, z: 0.7071067811865476 },
+  result: 'walk',
+  position: { x: 13.48528137423857, z: 13.48528137423857 },
+  duration: 100,
+  type: 'characterUpdate',
+  timestamp: 1476133488168 }
+character { x: 15.85786437626905, z: 15.85786437626905 } { x: 18.68629150101524, z: 18.68629150101524 } 3.9999999999999996
+distance 28.284271247461906
+character { x: 15.85786437626905, z: 15.85786437626905 } { x: 18.68629150101524, z: 18.68629150101524 } 3.9999999999999996
+distance 0
+other to next 15.999999999999998
+{ action: 'walk',
+  character: 1,
+  result: 'collision',
+  position: { x: 15.85786437626905, z: 15.85786437626905 },
+  collidedWith: 2,
+  orientation: { x: 0.7071067811865476, z: 0.7071067811865476 },
+  duration: 100,
+  type: 'characterUpdate',
+  timestamp: 1476133488268 }
+{ action: 'walk',
+  character: 1,
+  result: 'collision',
+  position: { x: 15.85786437626905, z: 15.85786437626905 },
+  collidedWith: 2,
+  orientation: { x: 0.7071067811865476, z: 0.7071067811865476 },
+  duration: 100,
+  type: 'characterUpdate',
+  timestamp: 1476133488368 }
+      1) Archer should flee for walking axeGuy
+
+
+  0 passing (5s)
+  1 failing
+
+  1) /home/glopez/playground/rabbits-engine/tests/ServerGameEngine.test.js NPC transitions integration Archer should flee for walking axeGuy:
+     Error: timeout of 2000ms exceeded. Ensure the done() callback is being called in this test.
+  
+
+
+
