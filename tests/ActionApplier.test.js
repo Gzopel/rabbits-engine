@@ -41,12 +41,13 @@ describe(__filename, () => {
 
     it('should collide after updating position if there is a gap', (done) => {
       characterOne.position = { x: 2, z: 2 };
-      characterTwo.position = { x: 2, z: 3 + characterOne.radius + characterTwo.radius };
+      const characterTwoZ = 3 + characterOne.radius + characterTwo.radius;
+      characterTwo.position = { x: 2, z: characterTwoZ};
       const testFn = (update) => {
         assert(update.character === characterTwo.id, 'Should update character two');
         assert(update.result === 'collision', 'Should collide');
         assert(update.collidedWith === characterOne.id, 'Should collide with player one');
-        assert(characterTwo.position.z < 25, 'Should decrease z position');
+        assert(characterTwo.position.z < characterTwoZ, 'Should decrease z position');
         assert(characterTwo.position.z > 2, 'but not that much')
         emitter.removeListener('characterUpdate', testFn);
         done();
@@ -59,12 +60,32 @@ describe(__filename, () => {
       });
     });
 
+    it('should walk if colliding but walking in other direction', (done) => {
+      characterOne.position = { x: 2, z: 2 };
+      const characterTwoZ = 1 + characterOne.radius + characterTwo.radius;
+      characterTwo.position = { x: 2, z: characterTwoZ};
+      const testFn = (update) => {
+        assert(update.character === characterTwo.id, 'Should update character two');
+        assert(update.result === 'walk', 'Should collide');
+        assert(characterTwo.position.z > characterTwoZ, 'Should increase z position');
+        assert(characterTwo.position.z <= 100, 'but not that much');
+        emitter.removeListener('characterUpdate', testFn);
+        done();
+      };
+      emitter.on('characterUpdate', testFn);
+      emitter.emit('newState', {
+        action: ACTIONS.WALKING,
+        owner: characterTwo.id,
+        direction: { x: 2, z: 100},
+      });
+    });
+
 
     it('if no direction should move using orientation', (done) => {
       characterOne.position = { x: 50, z: 50 };
       characterOne.orientation = { x: 1, z: 0 };
       const testFn = (update) => {
-        assert(update.character === characterOne.id, 'Should update character two');
+        assert(update.character === characterOne.id, 'Should update character one');
         assert(update.result === 'walk', 'Should walk');
         assert(characterOne.position.x > 5, 'Should increase x position');
         emitter.removeListener('characterUpdate', testFn);
@@ -81,7 +102,7 @@ describe(__filename, () => {
       characterOne.position = { x: 50, z: 50 };
       characterOne.orientation = { x: 1, z: 0 };
       const testFn = (update) => {
-        assert(update.character === characterOne.id, 'Should update character two');
+        assert(update.character === characterOne.id, 'Should update character one');
         assert(update.action === 'walk', 'Should walk');
         assert(characterOne.position.x < 50, 'Should decrease x position');
         emitter.removeListener('characterUpdate', testFn);
