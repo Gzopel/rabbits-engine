@@ -7,6 +7,17 @@ import { PlayerFSM } from '../lib/FSM/PlayerFSM';
 
 describe(__filename, () => {
   describe('A playerFSM working as an action queue', () => {
+    it('should ignore actions until it has spwaned', () => {
+      const timestamp = new Date().getTime()+200;
+      const pFSM = new PlayerFSM({}, { id: 1 });
+      pFSM.newAction({
+        character: 1,
+        type: ACTIONS.WALKING,
+        direction: { x: 10 , z: 10 },
+      });
+      assert(pFSM.tick(timestamp), 'should update');
+      assert(pFSM.state.action === ACTIONS.SPAWN, 'should still be spawning');
+    });
     it('should receive actions and executed them in each tick', (done) => {
       const pFSM = new PlayerFSM({}, { id: 1 });
       let timestamp = new Date().getTime();
@@ -40,8 +51,7 @@ describe(__filename, () => {
     const emitter = new EventEmitter2();
 
     it('should keep walking until it reaches the target', (done) => {
-      const timestamp = new Date
-      ().getTime();
+      const timestamp = new Date().getTime();
       const character = { id: 1, position: { x: 0, z: 0 } };
       const cFSM = new PlayerFSM(emitter, character, transitions);
       cFSM.setState(buildState(ACTIONS.IDLE),timestamp);

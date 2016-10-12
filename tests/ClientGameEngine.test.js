@@ -41,14 +41,23 @@ describe (__filename, () => {
     engine.tick(timestamp);
   });
 
-  it('should produce harmless attacks', (done) => {
+  it.only('should produce harmless attacks', (done) => {
+    let interval;
     const testFn = (event) => {
+      console.log(event)
       if (event.action === 'basicAttack') {
         assert.equal(event.character, characterTwo.id, 'not the expected id');
         assert.equal(event.aggressor, characterOne.id, 'not the expected aggressor');
         assert.equal(event.damage, 0, 'should do no damage');
+        clearInterval(interval);
         emitter.removeListener('characterUpdate', testFn);
         done();
+      } else {
+        engine.handlePlayerAction({
+          character: characterOne.id,
+          type: ACTIONS.BASIC_ATTACK,
+          target: characterTwo.id,
+        });
       }
     };
     emitter.on('characterUpdate', testFn);
@@ -60,16 +69,10 @@ describe (__filename, () => {
       position: { x: 15, z: 10 },
       sheet: characterTwo.sheet,
     });
-    timestamp += 100;
-    engine.tick(timestamp);
 
-    engine.handlePlayerAction({
-      character: characterOne.id,
-      type: ACTIONS.BASIC_ATTACK,
-      target: characterTwo.id,
-    });
-    for (let i = 1; i < 100; i++) {
-      engine.tick(timestamp + 100 * i);
-    };
+    interval = setInterval(() => {
+      console.log('tick')
+      engine.tick(timestamp + 100 * (new Date().getTime()-timestamp));
+    },5)
   });
 });
