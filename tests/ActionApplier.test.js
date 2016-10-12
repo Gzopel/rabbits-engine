@@ -188,9 +188,7 @@ describe(__filename, () => {
     });
 
     it('4. Axe should try to hit but move instead', (done) => {
-      console.log(characterOne.position,characterTwo.position);
       const testFn = (update) => {
-        console.log(update)
         assert(update.character === characterOne.id, 'Should update character one');
         assert(update.action === 'walk', 'Should be walking');
         assert(characterOne.position.z > 1, 'Should increase z position');

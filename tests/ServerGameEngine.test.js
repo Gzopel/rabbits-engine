@@ -328,7 +328,6 @@ describe(__filename, () => {
     engine.addCharacter(characterTwo, 'player');
     const collisionPromise = new Promise((resolve) => {
       const testFn = (event) => {
-        console.log(event)
         if (event.result === 'collision') {
           assert(event.collidedWith === characterTwo.id, 'should collide with character two');
           emitter.removeListener('characterUpdate', testFn);
