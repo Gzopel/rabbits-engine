@@ -122,7 +122,7 @@ describe(__filename, () => {
       const engine = new GameEngine(map, emitter);
       const character = JSON.parse(JSON.stringify(axeGuy));
       const testFn = (event) => {
-        assert.equal(event.characterId, character.id, 'not the expected id');
+        assert.equal(event.character, character.id, 'not the expected id');
         emitter.removeListener('rmCharacter', testFn);
         done();
       };
@@ -138,7 +138,7 @@ describe(__filename, () => {
       const characterOne = JSON.parse(JSON.stringify(axeGuy));
       const characterTwo = JSON.parse(JSON.stringify(archer));
       const testFn = (event) => {
-        assert.equal(event.characterId, characterOne.id, 'not the expected id');
+        assert.equal(event.character, characterOne.id, 'not the expected id');
         emitter.removeListener('rmCharacter', testFn);
         done();
       };
@@ -163,7 +163,7 @@ describe(__filename, () => {
       const character = JSON.parse(JSON.stringify(axeGuy));
       const removePromise = new Promise((resolve) => {
         const onRemove = (event) => {
-          assert.equal(event.characterId, character.id, 'not the expected id');
+          assert.equal(event.character, character.id, 'not the expected id');
           emitter.removeListener('rmCharacter', onRemove);
           resolve();
         };
@@ -298,20 +298,28 @@ describe(__filename, () => {
         };
         emitter.on('characterUpdate', testFn);
       });
-      Promise.all([shootPromise, collisionPromise]).then(() => done());
+      const removePromise = new Promise((resolve) => {
+        const testFn = (event) => {
+          // some assertion would be nice
+          emitter.removeListener('rmCharacter', testFn);
+          return resolve();
+        };
+        emitter.on('rmCharacter', testFn);
+      });
+      Promise.all([shootPromise, collisionPromise, removePromise]).then(() => done());
       engine.tick(timestamp);
       engine.handlePlayerAction({
         character: characterOne.id,
         type: ACTIONS.SHOOT,
       });
-      setInterval(()=>{
+      setInterval(() => {
         engine.tick(timestamp + 100*(new Date().getTime()-timestamp));
-      },10);
+      }, 10);
     });
   });
 
   it('should attack after colliding with a character', (done) => {
-    let timestamp = new Date().getTime() + 100;
+    const timestamp = new Date().getTime() + 100;
     const emitter = new EventEmitter2();
     const engine = new GameEngine(map, emitter);
     const characterOne = JSON.parse(JSON.stringify(archer));
@@ -320,8 +328,9 @@ describe(__filename, () => {
     engine.addCharacter(characterTwo, 'player');
     const collisionPromise = new Promise((resolve) => {
       const testFn = (event) => {
+        console.log(event)
         if (event.result === 'collision') {
-          assert(event.collidedWith === characterTwo.id,'should collide with character two');
+          assert(event.collidedWith === characterTwo.id, 'should collide with character two');
           emitter.removeListener('characterUpdate', testFn);
           return resolve();
         }
@@ -331,30 +340,51 @@ describe(__filename, () => {
     const attackPromise = new Promise((resolve) => {
       const testFn = (event) => {
         if (event.action === 'basicAttack') {
-          assert(event.character === characterTwo.id,'should attack character two');
+          assert(event.character === characterTwo.id, 'should attack character two');
           emitter.removeListener('characterUpdate', testFn);
           return resolve();
         }
       };
       emitter.on('characterUpdate', testFn);
     });
+
     Promise.all([attackPromise, collisionPromise]).then(() => done());
-    engine.tick(timestamp);
-    engine.characters.get(characterOne.id).position = { x: 10, z:100};
-    engine.characters.get(characterOne.id).orientation = { x: 0, z:-1};
-    engine.characters.get(characterTwo.id).position = { x: 10, z:10};
-    engine.handlePlayerAction({
-      character: characterOne.id,
-      type: ACTIONS.SHOOT,
+    const spawnOnePromise = new Promise((resolve) => {
+      const testFn = (event) => {
+        if (event.action === 'spawn' && event.character === characterOne.id) {
+          emitter.removeListener('characterUpdate', testFn);
+          return resolve();
+        }
+      };
+      emitter.on('characterUpdate', testFn);
     });
-    setInterval(()=>{
-      engine.tick(timestamp + 100*(new Date().getTime()-timestamp));
-    },10);
+    const spawnTwoPromise = new Promise((resolve) => {
+      const testFn = (event) => {
+        if (event.action === 'spawn' && event.character === characterTwo.id) {
+          emitter.removeListener('characterUpdate', testFn);
+          return resolve();
+        }
+      };
+      emitter.on('characterUpdate', testFn);
+    });
+    Promise.all([spawnOnePromise, spawnTwoPromise]).then(() => {
+      engine.characters.get(characterOne.id).position = { x: 10, z: 100 };
+      engine.characters.get(characterOne.id).orientation = { x: 0, z: -1 };
+      engine.characters.get(characterTwo.id).position = { x: 10, z: 10 };
+      engine.handlePlayerAction({
+        character: characterOne.id,
+        type: ACTIONS.SHOOT,
+      });
+      setInterval(() => {
+        engine.tick(timestamp + 100 * (new Date().getTime() - timestamp));
+      }, 10);
+    });
+    engine.tick(timestamp);
   });
 
   describe('NPC transitions integration', () => {
     it('Archer should attack walking axeGuy', () => {
-      let timestamp = new Date().getTime() +100;
+      let timestamp = new Date().getTime() + 100;
       const emitter = new EventEmitter2();
       const engine = new GameEngine(map, emitter);
       const characterOne = JSON.parse(JSON.stringify(axeGuy));
@@ -367,9 +397,7 @@ describe(__filename, () => {
       engine.characters.get(characterTwo.id).position = { x: 2, z: 2 };
       return new Promise((resolve) => {
         const testFn = (event) => {
-          if (event.character === characterOne.id
-            && (event.result === 'damaged' || event.result === 'block'
-            || event.result === 'dodge' || event.result === 'missed')) {
+          if (event.character === characterOne.id && (event.action === ACTIONS.BASIC_ATTACK)) {
             emitter.removeListener('characterUpdate', testFn);
             return resolve();
           }

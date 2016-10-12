@@ -29,5 +29,6 @@
         "difficulty": 7
       }
     }
-  }
+  },
+  "radius": 10
 }

@@ -131,24 +131,24 @@ describe(__filename, () => {
     it('1. Axe should hit', (done) => {
       const testFn = (update) => {
         assert(update.aggressor === characterOne.id, 'Character one should be the aggressor');
-      assert(update.character === characterTwo.id, 'Should update character two');
-      assert(update.result === 'damaged' || update.result === 'block'
-        || update.result === 'dodge' || update.result === 'missed');
-      if (update.result === 'damaged') {
-        assert(update.damage > 0, 'if damaged there should be damage');
-      }
-      emitter.removeListener('characterUpdate', testFn);
-      done();
-    };
-    emitter.on('characterUpdate', testFn);
-    emitter.emit('newState', {
-      action: ACTIONS.BASIC_ATTACK,
-      owner: characterOne.id,
-      target: characterTwo.id,
+        assert(update.character === characterTwo.id, 'Should update character two');
+        assert(update.result === 'damaged' || update.result === 'block'
+          || update.result === 'dodge' || update.result === 'missed');
+        if (update.result === 'damaged') {
+          assert(update.damage > 0, 'if damaged there should be damage');
+        }
+        emitter.removeListener('characterUpdate', testFn);
+        done();
+      };
+      emitter.on('characterUpdate', testFn);
+      emitter.emit('newState', {
+        action: ACTIONS.BASIC_ATTACK,
+        owner: characterOne.id,
+        target: characterTwo.id,
+      });
     });
-  });
 
-  it('2. Archer should flee', (done) => {
+    it('2. Archer should flee', (done) => {
       const testFn = (update) => {
         assert(update.character === characterTwo.id, 'Should update character two');
         assert(update.result === 'walk', 'should be walking');
@@ -188,7 +188,9 @@ describe(__filename, () => {
     });
 
     it('4. Axe should try to hit but move instead', (done) => {
+      console.log(characterOne.position,characterTwo.position);
       const testFn = (update) => {
+        console.log(update)
         assert(update.character === characterOne.id, 'Should update character one');
         assert(update.action === 'walk', 'Should be walking');
         assert(characterOne.position.z > 1, 'Should increase z position');
