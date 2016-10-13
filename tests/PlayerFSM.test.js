@@ -4,6 +4,7 @@ import { EventEmitter2 } from 'eventemitter2';
 import { ACTIONS } from '../lib/rules/BaseRuleBook';
 import { buildState } from '../lib/FSM/states';
 import { PlayerFSM } from '../lib/FSM/PlayerFSM';
+import { TRANSITIONS } from '../lib/FSM/transitions';
 
 describe(__filename, () => {
   describe('A playerFSM working as an action queue', () => {
@@ -18,9 +19,12 @@ describe(__filename, () => {
       assert(pFSM.tick(timestamp), 'should update');
       assert(pFSM.state.action === ACTIONS.SPAWN, 'should still be spawning');
     });
+
     it('should receive actions and executed them in each tick', (done) => {
-      const pFSM = new PlayerFSM({}, { id: 1 });
+      const emitter = new EventEmitter2();
+      const pFSM = new PlayerFSM(emitter, { id: 1 });
       let timestamp = new Date().getTime();
+      pFSM.setState(buildState(ACTIONS.IDLE, { owner: 1 },timestamp));
       for (let i = 1; i < 10; i++) {
         pFSM.newAction({
           actionId: i,

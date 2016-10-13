@@ -39,12 +39,28 @@ describe(__filename, () => {
       let prevX = 0;
       let prevZ = 0;
       let spawned = false;
+      let idle = false;
       const targetX = 10;
       const targetZ = 50;
       return new Promise((resolve) => {
         const testFn = (event) => {
           if (event.result === ACTIONS.SPAWN && !spawned) {
             spawned = true; //drop it
+
+            prevTimestamp += 100;
+            engine.tick(prevTimestamp);
+            return;
+          }
+          if (event.result === ACTIONS.IDLE && !idle) {
+            idle = true;
+            engine.characters.get(character.id).position = { x: 0 , z: 0 };
+            engine.handlePlayerAction({
+              character: character.id,
+              type: ACTIONS.WALKING,
+              direction: { x: targetX, z: targetZ},
+            });
+            prevTimestamp += 100;
+            engine.tick(prevTimestamp);
             return;
           }
           assert.equal(event.type, 'characterUpdate', 'not the expected event');
@@ -66,16 +82,10 @@ describe(__filename, () => {
           engine.tick(prevTimestamp);
         };
         engine.addCharacter(character, 'player');
-        engine.tick(prevTimestamp);
-        engine.characters.get(character.id).position = { x: 0 , z: 0 };
-        engine.handlePlayerAction({
-          character: character.id,
-          type: ACTIONS.WALKING,
-          direction: { x: targetX, z: targetZ},
-        });
-        emitter.on('characterUpdate', testFn);
         prevTimestamp += 100;
         engine.tick(prevTimestamp);
+
+        emitter.on('characterUpdate', testFn);
       });
     });
 
@@ -85,10 +95,25 @@ describe(__filename, () => {
       const character = JSON.parse(JSON.stringify(axeGuy));
       let prevTimestamp = new Date().getTime() + 100;
       let spawned = false;
+      let idle = false;
       return new Promise((resolve) => {
         const testFn = (event) => {
           if (event.result === ACTIONS.SPAWN && !spawned) {
             spawned = true; //drop it
+            prevTimestamp += 100;
+            engine.tick(prevTimestamp);
+            return;
+          }
+          if (event.result === ACTIONS.IDLE && !idle) {
+            idle = true;
+            engine.characters.get(character.id).position = { x: 0 , z: 0 };
+            engine.handlePlayerAction({
+              character: character.id,
+              type: ACTIONS.WALKING,
+              direction: { x: -100, z: -100 },
+            });
+            prevTimestamp += 100;
+            engine.tick(prevTimestamp);
             return;
           }
           assert.equal(event.type, 'characterUpdate', 'not the expected event');
@@ -107,13 +132,6 @@ describe(__filename, () => {
         engine.addCharacter(character, 'player');
         engine.tick(prevTimestamp);
         emitter.on('characterUpdate', testFn);
-        engine.handlePlayerAction({
-          character: character.id,
-          type: ACTIONS.WALKING,
-          direction: { x: -100, z: -100 },
-        });
-        prevTimestamp += 100;
-        engine.tick(prevTimestamp);
       });
     });
 
@@ -143,21 +161,47 @@ describe(__filename, () => {
         done();
       };
       emitter.on('rmCharacter', testFn);
+      const idleOne = new Promise((resolve) => {
+        const onIdle = (event) => {
+          if (event.character === characterOne.id && event.action === ACTIONS.IDLE) {
+            emitter.removeListener('characterUpdate', onIdle);
+            resolve();
+          }
+        };
+        timestamp += 100;
+        engine.tick(timestamp);
+        emitter.on('characterUpdate', onIdle);
+      });
+      const idleTwo = new Promise((resolve) => {
+        const onIdle = (event) => {
+          if (event.character === characterTwo.id && event.action === ACTIONS.IDLE) {
+            emitter.removeListener('characterUpdate', onIdle);
+            resolve();
+          }
+          timestamp += 100;
+          engine.tick(timestamp);
+        };
+        emitter.on('characterUpdate', onIdle);
+      });
+      Promise.all([idleOne, idleTwo]).then(() => {
+        engine.handlePlayerAction({
+          character: characterTwo.id,
+          type: ACTIONS.BASIC_ATTACK,
+          target: characterOne.id,
+        });
+        for (let i = 2; i < 100; i++) {
+          engine.tick(timestamp + 100 * i);
+        }
+      });
       engine.addCharacter(characterOne, 'player');
       engine.addCharacter(characterTwo, 'player');
       engine.tick(timestamp);
-      engine.handlePlayerAction({
-        character: characterTwo.id,
-        type: ACTIONS.BASIC_ATTACK,
-        target: characterOne.id,
-      });
-      for (let i = 2; i < 100; i++) {
-        engine.tick(timestamp + 100 * i);
-      }
+
     });
 
     it('should remove a player after it warps on an exit', (done) => {
       let timestamp = new Date().getTime() + 100;
+      let interval;
       const emitter = new EventEmitter2();
       const engine = new GameEngine(map, emitter);
       const character = JSON.parse(JSON.stringify(axeGuy));
@@ -181,19 +225,32 @@ describe(__filename, () => {
         };
         emitter.on('characterUpdate', onWarp);
       });
+      const idlePromise = new Promise((resolve) => {
+        const onIdle = (event) => {
+          assert.equal(event.character, character.id, 'not the expected id');
+          if (event.result === 'idle') {
+            engine.handlePlayerAction({
+              character: character.id,
+              type: ACTIONS.WALKING,
+              direction: { x: 40, z: 0 },
+            });
+            emitter.removeListener('characterUpdate', onIdle);
+            resolve();
+          }
+        };
+        emitter.on('characterUpdate', onIdle);
+      });
       engine.addCharacter(character, 'player');
       engine.tick(timestamp);
-      engine.handlePlayerAction({
-        character: character.id,
-        type: ACTIONS.WALKING,
-        direction: { x: 40, z: 0 },
+
+      Promise.all([removePromise, warpPromise,idlePromise]).then(() => {
+        clearInterval(interval);
+        done();
       });
 
-      Promise.all([removePromise, warpPromise]).then(() => done());
-
-      for (let i = 2; i < 100; i++) {
-        engine.tick(timestamp + 100 * i);
-      }
+      interval = setInterval(() => {
+        engine.tick(timestamp + 100*(new Date().getTime()-timestamp));
+      }, 10);
     });
 
     it('should be idle after attacking a disconnected player', () => {
@@ -275,6 +332,7 @@ describe(__filename, () => {
   describe('Shoot action', () => {
     it('should be removed after hitting a border', (done) => {
       let timestamp = new Date().getTime() + 100;
+      let interval;
       const emitter = new EventEmitter2();
       const engine = new GameEngine(map, emitter);
       const characterOne = JSON.parse(JSON.stringify(archer));
@@ -306,13 +364,16 @@ describe(__filename, () => {
         };
         emitter.on('rmCharacter', testFn);
       });
-      Promise.all([shootPromise, collisionPromise, removePromise]).then(() => done());
+      Promise.all([shootPromise, collisionPromise, removePromise]).then(() => {
+        clearInterval(interval);
+        done();
+      });
       engine.tick(timestamp);
       engine.handlePlayerAction({
         character: characterOne.id,
         type: ACTIONS.SHOOT,
       });
-      setInterval(() => {
+      interval = setInterval(() => {
         engine.tick(timestamp + 100*(new Date().getTime()-timestamp));
       }, 10);
     });
@@ -422,6 +483,7 @@ describe(__filename, () => {
       const fleeTransitions = [TRANSITIONS.fleeOnSight];
       engine.addCharacter(characterOne, 'player');
       engine.addCharacter(characterTwo, 'NPC', fleeTransitions);
+      engine.tick(timestamp);
       return new Promise((resolve) => {
         const testFn = (event) => {
           if (event.character === characterTwo.id
@@ -433,15 +495,22 @@ describe(__filename, () => {
           timestamp += 100;
           engine.tick(timestamp);
         };
-        engine.tick(timestamp);
+        emitter.on('characterUpdate', testFn);
+        const onIdle = (event) => {
+          if (event.action === 'idle' && event.character === characterOne.id) {
+            emitter.removeListener('characterUpdate', onIdle);
+            engine.handlePlayerAction({
+              character: characterOne.id,
+              type: ACTIONS.WALKING,
+              direction: { x: 50, z: 50 },
+            });
+            timestamp += 100;
+            engine.tick(timestamp);
+          }
+        };
+        emitter.on('characterUpdate', onIdle);
         engine.characters.get(characterOne.id).position = { x: 5, z: 5 };
         engine.characters.get(characterTwo.id).position = { x: 30, z: 30};
-        engine.handlePlayerAction({
-          character: characterOne.id,
-          type: ACTIONS.WALKING,
-          direction: { x: 50, z: 50 },
-        });
-        emitter.on('characterUpdate', testFn);
         timestamp += 100;
         engine.tick(timestamp);
       });
