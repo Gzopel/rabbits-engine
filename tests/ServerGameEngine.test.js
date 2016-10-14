@@ -201,7 +201,6 @@ describe(__filename, () => {
 
     it('should remove a player after it warps on an exit', (done) => {
       let timestamp = new Date().getTime() + 100;
-      let interval;
       const emitter = new EventEmitter2();
       const engine = new GameEngine(map, emitter);
       const character = JSON.parse(JSON.stringify(axeGuy));
@@ -222,6 +221,8 @@ describe(__filename, () => {
             emitter.removeListener('characterUpdate', onWarp);
             resolve();
           }
+          timestamp+=100;
+          engine.tick(timestamp);
         };
         emitter.on('characterUpdate', onWarp);
       });
@@ -235,6 +236,8 @@ describe(__filename, () => {
               direction: { x: 40, z: 0 },
             });
             emitter.removeListener('characterUpdate', onIdle);
+            timestamp+=100;
+            engine.tick(timestamp);
             resolve();
           }
         };
@@ -244,13 +247,40 @@ describe(__filename, () => {
       engine.tick(timestamp);
 
       Promise.all([removePromise, warpPromise,idlePromise]).then(() => {
-        clearInterval(interval);
         done();
       });
+      timestamp+=100;
+      engine.tick(timestamp);
+    });
 
-      interval = setInterval(() => {
-        engine.tick(timestamp + 100*(new Date().getTime()-timestamp));
-      }, 10);
+    it('should be idle after killing player', () => {
+      let timestamp = new Date().getTime() + 100;
+      const emitter = new EventEmitter2();
+      const engine = new GameEngine(map, emitter);
+      const characterOne = JSON.parse(JSON.stringify(axeGuy));
+      const characterTwo = JSON.parse(JSON.stringify(archer));
+      engine.addCharacter(characterOne, 'player');
+      engine.addCharacter(characterTwo, 'player');
+      return new Promise((resolve) => {
+        const testFn = (event) => {
+          if (event.character === characterTwo.id
+            && event.result === 'idle') {
+            if(event.action === ACTIONS.BASIC_ATTACK) {
+              emitter.removeListener('characterUpdate', testFn);
+              return resolve();
+            }
+            engine.handlePlayerAction({
+              character: characterTwo.id,
+              type: ACTIONS.BASIC_ATTACK,
+              target: characterOne.id,
+            });
+          }
+          timestamp += 100;
+          engine.tick(timestamp);
+        };
+        emitter.on('characterUpdate', testFn);
+        engine.tick(timestamp);
+      });
     });
 
     it('should be idle after attacking a disconnected player', () => {
@@ -259,26 +289,27 @@ describe(__filename, () => {
       const engine = new GameEngine(map, emitter);
       const characterOne = JSON.parse(JSON.stringify(axeGuy));
       const characterTwo = JSON.parse(JSON.stringify(archer));
-      engine.addCharacter(characterOne, 'player',[TRANSITIONS.stopAttackingWhenResultIdle]);
+      engine.addCharacter(characterOne, 'player');
       engine.addCharacter(characterTwo, 'player');
       return new Promise((resolve) => {
         const testFn = (event) => {
           if (event.character === characterTwo.id
             && event.result === 'idle') {
-            emitter.removeListener('characterUpdate', testFn);
-            return resolve();
+            if(event.action === ACTIONS.BASIC_ATTACK) {
+              emitter.removeListener('characterUpdate', testFn);
+              return resolve();
+            }
+            engine.handlePlayerAction({
+              character: characterTwo.id,
+              type: ACTIONS.BASIC_ATTACK,
+              target: characterOne.id,
+            });
+            engine.removeCharacter(characterOne.id);
           }
-
           timestamp += 100;
           engine.tick(timestamp);
         };
         emitter.on('characterUpdate', testFn);
-        engine.handlePlayerAction({
-          character: characterTwo.id,
-          type: ACTIONS.BASIC_ATTACK,
-          target: characterOne.id,
-        });
-        engine.removeCharacter(characterOne.id);
         engine.tick(timestamp);
       });
     });
